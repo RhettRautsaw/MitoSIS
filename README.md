@@ -1,14 +1,10 @@
-#BarcodeIDChecker
-
---
+# BarcodeIDChecker
 
 This script is a wrapper for many other programs and is designed extract the mitochondrial genome from raw or trimmed sequencing data and blast the resulting protein coding sequences or barcoding genes (e.g., CYTB, COX1, ND4, etc.) to check for sample mislabeling. 
 
 **IN DEVELOPMENT**::The second part of this script will use the assembled mitogenomes to infer a phylogeny using HOMBLOCKS and IQTREE. 
 
---
-
-### Input
+## Input
 **--assemble**
 
 - **-f1, -f2**: Fastq files containing the raw/trimmed reads 
@@ -21,9 +17,7 @@ This script is a wrapper for many other programs and is designed extract the mit
 
 - **-s**: A txt list containing the names of all samples on which assemble has been run. 
 
---
-
-### Pipeline
+## Pipeline
 
 **--assemble**
 
@@ -39,9 +33,7 @@ This script is a wrapper for many other programs and is designed extract the mit
 1. Align mitogenomes using HomBlocks 
 2. Infer phylogeny using IQTREE 
 
---
-
-### Installation
+## Installation
 **System Requirement**
 
 - Linux
@@ -82,9 +74,7 @@ echo "export PATH=$PATH:path/to/release_MitoZ_v2.4-alpha/" >> ~/.bash_profile
 ```
 
 
---
-
-### Example
+## Example
 ```
 BarcodeIDChecker_v1.py --assemble -f1 {}_F.fq -f2 {}_R.fq -r mito_ref.fasta -o {}
 
@@ -125,9 +115,7 @@ parallel -a samples.txt --sshloginfile $PBS_NODEFILE -j1 "source .bash_profile
 BarcodeIDChecker_v1.py --phylo -s samples.txt
 ```
 
---
-
-### Output
+## Output
 Inside the `BarcodeIDChecker_results` folder, you will find a tab-delimited file with the top 10 results for each successfully annotated mitochondrial gene for you to check your species ID including percent identity.
 
 - `{}_blast.tab`
@@ -141,7 +129,7 @@ In addition, you will also find a `{}.result` folder that contains:
 
 If `MitoZ` failed and `MITGARD` was required, you will also find the `best_reference.*` files which identify what reference sequence was used to create the mitogenome. The `{}_F.fq` and `{}_R.fq` files are the fastq reads which mapped to the provided reference sequences via `bwa`.
 
---
-
-### Cite
-https://github.com/reptilerhett/BarcodeIDChecker
+## Cite
+- https://github.com/reptilerhett/BarcodeIDChecker
+- MITGARD
+- MitoZ
