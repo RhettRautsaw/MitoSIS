@@ -56,14 +56,9 @@ parser.add_argument("-o","--output",
                     default='ZZZ',
                     help="OPTIONAL for --assemble: Prefix for output files. Default is 'ZZZ'")
 
-parser.add_argument("-h","--homblocks",
-					type=str,
-                    default='/zfs/venom/Rhett/bin/HOMBLOCKS/HomBlocks.pl',
-					help="REQUIRED for --phylo: Absolute path to HomBlocks.pl")
-parser.add_argument("-p","--path",
-					type=str,
-                    default='./mitogenomes/',
-					help="REQUIRED for --phylo: Absolute path to folder containing all the assembled mitogenomes.")
+parser.add_argument("-s","--samples",
+					type=argparse.FileType('r+'),
+					help="REQUIRED for --phylo: List of samples that have had Step 1 run on them.")
 
 parser.add_argument("-t","--num_threads",
 					type=int,
@@ -178,24 +173,19 @@ if args.assemble:
 	
 	print("\n::: Running blast :::\n")
 	if os.path.isdir(output + ".result"):
-		folder = output + '.result/'
-		subprocess.call('cat ' + folder + output + '.cds ' + folder + output + '.rrna ' + folder + output + '.fasta > blast_query.fasta'
-		
-		command = 'blastn -query blast_query.fasta -db ../' + reference_name + ' -outfmt "6 qseqid stitle pident evalue bitscore" -num_threads ' + str(num_threads) + ' -max_target_seqs 100 -evalue 0.0001 -out ' + output + "_blast.tab"
+		command = 'blastn -query ' + output + '.result/' + output + '.cds -db ../' + reference_name + ' -outfmt "6 qseqid stitle pident evalue bitscore" -num_threads ' + str(num_threads) + ' -max_target_seqs 10 -evalue 0.0001 -out ' + output + "_blast.tab"
 		subprocess.call(command, shell=True)
-		
 	else:
 		print("\n::: MitoZ annotation failed :::\n")
 		print("\n::: Genome assembly too fragmented :::\n")
 		print("\n::: We will blast what MITGARD was able to assemble :::\n")
-		
-		command = 'blastn -query tmp_mitogenome.fa -db ../' + reference_name + ' -outfmt "6 qseqid stitle pident evalue bitscore" -num_threads ' + str(num_threads) + ' -max_target_seqs 100 -evalue 0.0001 -out ' + output + "_blast.tab"
+		command = 'blastn -query tmp_mitogenome.fa -db ../' + reference_name + ' -outfmt "6 qseqid stitle pident evalue bitscore" -num_threads ' + str(num_threads) + ' -max_target_seqs 10 -evalue 0.0001 -out ' + output + "_blast.tab"
 		subprocess.call(command, shell=True)
 		
 		os.mkdir(output + ".result")
-		subprocess.call('mv tmp_mitogenome.fa ' + output + '.result/' + output + '.fasta', shell=True)
+		subprocess.call('mv tmp_mitogenome.fa ' + output + '.result/' + output + '_mitogenome.fasta', shell=True)
 	
-	subprocess.call("sort -t$'\t' -k3 -nr " + output + "_blast.tab > tmp.tab", shell=True)
+	subprocess.call("sort -t$'\t' -k5 -nr " + output + "_blast.tab > tmp.tab", shell=True)
 	
 	subprocess.call("mv tmp.tab " + output + "_blast.tab", shell=True)
 	
@@ -205,16 +195,12 @@ if args.assemble:
 if args.phylo:
 	print("\n::: AVENGERS INFER PHYLOGENY! :::\n")
 	
-#	path_name = args.path
-#	homblocks = args.homblocks
+	samples_name = args.samples.name
 
 #	os.mkdir("HOMBLOCKS")
-#	os.chdir('HOMBLOCKS')
 	
-#	command = "perl " + homblocks + " --align --path=" + path_name + " -out_seq=HOMBLOCKS.output.fasta  --mauve-out=HOMBLOCKS.mauve.out"
-#	subprocess.call(command, shell=True)
-	
-#	command = "iqtree -s HOMBLOCKS.output.fasta -bb 1000 -seed 12345"
-#	subprocess.call(command, shell=True)
+#	command = "perl HomBlocks.pl --align --path=/public/home/mgb217/HomBlocks/Xenarthrans/fasta/ -out_seq=Xenarthrans.output.fasta  --mauve-out=Xenarthrans.mauve.out
+
 
 print("\n::: FINISHED :::\n")
+
