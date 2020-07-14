@@ -185,7 +185,7 @@ if args.assemble:
 		os.mkdir(output + ".result")
 		subprocess.call('mv tmp_mitogenome.fa ' + output + '.result/' + output + '_mitogenome.fasta', shell=True)
 	
-	subprocess.call("sort -t$'\t' -k5 -nr " + output + "_blast.tab > tmp.tab", shell=True)
+	subprocess.call("sort -t$'\t' -k3 -nr " + output + "_blast.tab > tmp.tab", shell=True)
 	
 	subprocess.call("mv tmp.tab " + output + "_blast.tab", shell=True)
 	
