@@ -173,8 +173,8 @@ if args.assemble:
 
 	print("\n::: Running blast :::\n")
 	if os.path.isdir(output + ".result"):
-		subprocess.call('cat ' + output + '.result/' + output '.cds ' + output + '.result/' + output + '.rrna > blast_query.fasta', shell=True)
-		
+		subprocess.call('cat ' + output + '.result/' + output + '.cds ' + output + '.result/' + output + '.rrna > blast_query.fasta', shell=True)
+
 		command = 'blastn -query blast_query.fasta -db ../' + reference_name + ' -outfmt "6 qseqid stitle pident evalue bitscore" -num_threads ' + str(num_threads) + ' -max_target_seqs 10 -evalue 0.0001 -out ' + output + "_blast.tab"
 		subprocess.call(command, shell=True)
 	else:
