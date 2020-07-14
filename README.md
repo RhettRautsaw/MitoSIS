@@ -28,6 +28,8 @@ This script is a wrapper for many other programs and is designed extract the mit
 4. Extract protein coding/barcoding genes 
 5. Blast genes to reference fasta and determine top blast hit for taxa ID 
 
+![](BarcodeIDChecker_Flowchart.png)
+
 **--phylo**
 
 1. Align mitogenomes using HomBlocks 
