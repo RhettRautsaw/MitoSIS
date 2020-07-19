@@ -1,5 +1,5 @@
 # BarcodeIDChecker
-## Rhett M. Rautsaw
+#### Rhett M. Rautsaw
 
 This script is a wrapper for [MitoZ](https://github.com/linzhi2013/MitoZ) and [MITGARD](https://github.com/pedronachtigall/MITGARD) and is designed extract vertebrate mitochondrial genomes from raw or trimmed sequencing data. It will then blast the resulting mitogenome or barcoding genes (e.g., CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling.
 
