@@ -65,7 +65,7 @@ parser.add_argument("-t","--num_threads",
 					default=8,
 					help="OPTIONAL for both --assemble and --phylo: Number of threads. Default is 8")
 
-parser.add_argument("--version", action='version', version='BarcodeIDChecker_v3')
+parser.add_argument("--version", action='version', version='BarcodeIDChecker v1')
 args=parser.parse_args()
 
 ###############################################
