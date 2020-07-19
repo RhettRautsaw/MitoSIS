@@ -7,11 +7,11 @@ This script is a wrapper for [MitoZ](https://github.com/linzhi2013/MitoZ) and [M
 ## Arguments
 
 - **-f1, --fastq1**
-	- REQUIRED: Fastq read pair 1 (forward)
+	- REQUIRED: Full path to fastq read pair 1 (forward)
 - **-f2, --fastq2**
-	- REQUIRED: Fastq read pair 2 (reverse)
+	- REQUIRED: Full path to fastq read pair 2 (reverse)
 - **-r, --reference**
-	- REQUIRED: Fasta reference database
+	- REQUIRED: Full path to fasta reference database
 	- I recommend downloading any and all mitochondrial sequences/genomes for your clade from [GenBank](https://www.ncbi.nlm.nih.gov/genbank/) to function as your reference.
 	- For example, since I study pitvipers I would download all mitochondrial sequences for snakes.
 - **-o, --output**

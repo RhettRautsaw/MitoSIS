@@ -26,13 +26,13 @@ https://github.com/reptilerhett/BarcodeIDChecker\n\n')
 
 parser.add_argument("-f1","--fastq1",
 					type=argparse.FileType('r+'),
-					help="REQUIRED: Fastq read pair 1 (forward)")
+					help="REQUIRED: Full path to fastq read pair 1 (forward)")
 parser.add_argument("-f2","--fastq2",
 					type=argparse.FileType('r+'),
-					help="REQUIRED: Fastq read pair 2 (reverse)")
+					help="REQUIRED: Full path to fastq read pair 2 (reverse)")
 parser.add_argument("-r","--reference",
 					type=argparse.FileType('r+'),
-					help="REQUIRED: Fasta reference database (I recommend downloading all mitochondrial data for your clade of interest from GenBank, e.g. snakes)")
+					help="REQUIRED: Full path to fasta reference database (I recommend downloading all mitochondrial data for your clade of interest from GenBank, e.g. snakes)")
 parser.add_argument("-o","--output",
 					type=str,
 					default='ZZZ',
