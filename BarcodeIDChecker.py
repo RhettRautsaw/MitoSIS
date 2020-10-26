@@ -47,11 +47,11 @@ args=parser.parse_args()
 
 ###############################################
 
-#fastq1_name="/zfs/venom/ajmason/Active/MS_Phylogenomics_of_Bothrops_2019/data/02_trimming/I0771_Agkistrodon_conanti/I0771_Agkistrodon_conanti_F_val_1.fq.gz"
-#fastq2_name="/zfs/venom/ajmason/Active/MS_Phylogenomics_of_Bothrops_2019/data/02_trimming/I0771_Agkistrodon_conanti/I0771_Agkistrodon_conanti_R_val_2.fq.gz"
-#reference_name="mito_ref.fasta"
+#fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/00_raw/I0771_Agkistrodon_conanti_F.fastq.gz"
+#fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/00_raw/I0771_Agkistrodon_conanti_R.fastq.gz"
+#reference_name="/zfs/venom/Rhett/Data/2020-09_GenbankSnakeMito/2020-09_GenbankSnakeMito.fasta"
 #output="I0771_Agkistrodon_conanti"
-#num_threads=8
+#num_threads=16
 
 output = args.output
 num_threads = args.num_threads
