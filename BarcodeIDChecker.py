@@ -259,7 +259,10 @@ for index in results.index:
 results['ssciname']=ssciname
 results2=results >> group_by(X.ssciname) >> summarize(mean_pident = X.pident.mean())
 results2=results2.sort_values("mean_pident", ascending=False)
-results2.to_csv("blast_results_summary.csv",index=False)
+tfile = open('blast_results.summary', 'a')
+tfile.write(df.to_string(index=False))
+tfile.close()
+#results2.to_csv("blast_results_summary.csv",index=False)
 
 sp.call("sort -t$'\t' -k4 -nr blast_results.tab > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 sp.call("mv tmp.tab blast_results.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
