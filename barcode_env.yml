@@ -1,0 +1,30 @@
+name: barcode_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - samtools=1.9
+  - bowtie2=2.3
+  - minimap2=2.17
+  - trinity=2.8.5
+  - spades=3.13.1
+  - libgd=2.2
+  - python=3.6.7
+  - biopython=1.69
+  - ete3=3.0.0b35
+  - perl-list-moreutils=0.428
+  - perl-params-validate=1.29
+  - perl-clone=0.42
+  - circos=0.69
+  - perl-bioperl=1.7.2
+  - blast=2.2.31
+  - hmmer=3.1b2
+  - bwa=0.7.12
+  - infernal=1.1.1
+  - tbl2asn=25.7
+  - openjdk=11.0.8
+  - pandas=0.25.3
+  - mafft=7.471
+  - trimal=1.4.1
+  - iqtree=2.0.3
