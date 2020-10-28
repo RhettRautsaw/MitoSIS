@@ -84,20 +84,19 @@ args=parser.parse_args()
 
 ############################################### SETUP
 
-#fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/00_raw/I0771_Agkistrodon_conanti_F.fastq.gz"
-#fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/00_raw/I0771_Agkistrodon_conanti_R.fastq.gz"
-#reference_name="/zfs/venom/Rhett/Data/2020-09_GenbankSnakeMito/2020-09_GenbankSnakeMito.fasta"
+#fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/02_trim/I0771_Agkistrodon_conanti_F_trim.fastq.gz"
+#fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/02_trim/I0771_Agkistrodon_conanti_R_trim.fastq.gz"
 #output="I0771_Agkistrodon_conanti"
 
 #fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/00_raw/I0796_Daboia_russelii_F.fastq.gz"
 #fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/00_raw/I0796_Daboia_russelii_R.fastq.gz"
-fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_F_trim.fastq.gz"
-fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_R_trim.fastq.gz"
-reference_name="/zfs/venom/Rhett/Data/2020-09_GenbankSnakeMito/2020-09_GenbankSnakeMito.fasta"
-references = list(SeqIO.parse(reference_name,"fasta"))
-output="I0796_Daboia_russelii"
-num_threads=16
-memory="55G"
+#fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_F_trim.fastq.gz"
+#fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_R_trim.fastq.gz"
+#output="I0796_Daboia_russelii"
+#reference_name="/zfs/venom/Rhett/Data/2020-09_GenbankSnakeMito/2020-09_GenbankSnakeMito.fasta"
+#references = list(SeqIO.parse(reference_name,"fasta"))
+#num_threads=16
+#memory="55G"
 
 fastq1_name = os.path.abspath(args.fastq1.name)
 fastq2_name = os.path.abspath(args.fastq2.name)
@@ -175,8 +174,7 @@ sp.call("MitoZ.py all2 --genetic_code auto --clade Chordata --outprefix " + outp
 if os.path.isdir(output+".result"):
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: MitoZ ran successfully :::\n")
 else:
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: MitoZ did not run successfully :::\n")
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Using MITGARD instead :::\n")
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: MitoZ failed, trying MITGARD :::\n")
 	sp.call("rm -rf " + output + ".tmp/", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	sp.call("samtools index tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	
@@ -212,7 +210,7 @@ else:
 	############################################### ANNOTATE MITGARD ASSEMBLY WITH MITOZ
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Annotating MITGARD mitogenome with MitoZ :::\n")
-	sp.call("MitoZ.py annotate --genetic_code auto --clade Chordata --outprefix " + output + " --thread_number " + str(num_threads) + " --fastafile tmp_mitogenome.fa", shell=True)#, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("MitoZ.py annotate --genetic_code auto --clade Chordata --outprefix " + output + " --thread_number " + str(num_threads) + " --fastafile tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 if os.path.isdir(output + ".result"):
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Moving onto BLAST :::\n")
@@ -257,10 +255,11 @@ for index in results.index:
 	genus=results['stitle'][index].split()[1]
 	species=results['stitle'][index].split()[2]
 	ssciname.append(genus+"_"+species)
+
 results['ssciname']=ssciname
 results2=results >> group_by(X.ssciname) >> summarize(mean_pident = X.pident.mean())
 results2=results2.sort_values("mean_pident", ascending=False)
-results2.to_string("blast_results.summarized",index=False)
+results2.to_csv("blast_results_summary.csv",index=False)
 
 sp.call("sort -t$'\t' -k4 -nr blast_results.tab > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 sp.call("mv tmp.tab blast_results.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
