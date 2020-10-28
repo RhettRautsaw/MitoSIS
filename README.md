@@ -74,6 +74,8 @@ ncbi.update_taxonomy_database()
 quit()
 
 # YOU'RE READY TO GO
+# Check if BarcodeIDChecker.py is in your path
+BarcodeIDChecker.py -h
 ```
 
 
