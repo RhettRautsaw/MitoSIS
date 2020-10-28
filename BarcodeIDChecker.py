@@ -259,8 +259,8 @@ for index in results.index:
 results['ssciname']=ssciname
 results2=results >> group_by(X.ssciname) >> summarize(mean_pident = X.pident.mean())
 results2=results2.sort_values("mean_pident", ascending=False)
-tfile = open('blast_results.summary', 'a')
-tfile.write(df.to_string(index=False))
+tfile = open('blast_results.summary', 'w')
+tfile.write(results2.to_string(index=False))
 tfile.close()
 #results2.to_csv("blast_results_summary.csv",index=False)
 
