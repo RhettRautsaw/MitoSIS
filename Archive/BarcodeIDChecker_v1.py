@@ -93,17 +93,15 @@ args=parser.parse_args()
 #fastq1_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_F_trim.fastq.gz"
 #fastq2_name="/zfs/venom/Rhett/Data/SeqCap/I0796_Daboia_russelii/02_trim/I0796_Daboia_russelii_R_trim.fastq.gz"
 #output="I0796_Daboia_russelii"
+#reference_name="/zfs/venom/Rhett/Data/2020-09_GenbankSnakeMito/2020-09_GenbankSnakeMito.fasta"
+#references = list(SeqIO.parse(reference_name,"fasta"))
 #num_threads=16
 #memory="55G"
 
-#reference_name_gb="/zfs/venom/Rhett/Data/2020-10_GenbankSnakeMito/2020-10_SnakeMito.gb"
-#reference_name = reference_name_gb.split(".gb")[0]+".fasta"
-#references = list(SeqIO.parse(reference_name,"fasta"))
-
 fastq1_name = os.path.abspath(args.fastq1.name)
 fastq2_name = os.path.abspath(args.fastq2.name)
-reference_name_gb = os.path.abspath(args.reference.name)
-reference_name = reference_name_gb.split(".gb")[0]+".fasta"
+reference_name = os.path.abspath(args.reference.name)
+references = list(SeqIO.parse(reference_name,"fasta"))
 output = args.output
 num_threads = args.cpu
 memory=args.memory
@@ -143,33 +141,6 @@ print("\tAmount of memory -> "+memory+"\n")
 
 os.mkdir("BarcodeIDChecker_results")
 os.chdir('BarcodeIDChecker_results')
-
-############################################### PARSE GENBANK
-
-if os.path.isfile(reference_name + ".sp"):
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Genbank to Fasta conversion already done :::\n")
-else:
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converting Genbank to Fasta :::\n")
-	sp.call('rm ' + reference_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	species=[]
-	count=1
-	gb = open(reference_name_gb, 'r')
-	for gb_record in SeqIO.parse(gb,'genbank'):
-		acc = gb_record.id
-		org = gb_record.annotations['organism']
-		acc_org = [acc,org]
-		species.append(acc_org)
-		with open(reference_name, "a") as output_handle:
-			tmp=SeqIO.write(gb_record, output_handle, "fasta")
-			count = 1 + count
-	
-	species_df = pd.DataFrame(species)
-	species_df.to_csv(reference_name+'.sp', index=False, header=False, sep="\t")
-	
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converted %i Genbank records to Fasta :::\n" % count)
-
-references = list(SeqIO.parse(reference_name,"fasta"))
-species = pd.read_csv(reference_name+'.sp',sep="\t", names=['sseqid','species']) 
 
 ############################################### RUN BWA
 
@@ -279,9 +250,14 @@ else:
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Extracting BLAST results for Phylogenetics :::\n")
 header_list = ["qseqid","sseqid","stitle","pident","evalue","bitscore","sseq"]
 results = pd.read_csv("blast_results.tab",sep='\t',names=header_list)
-results = pd.merge(results, species, on ='sseqid', how ='left')
+ssciname=[]
+for index in results.index:
+	genus=results['stitle'][index].split()[1]
+	species=results['stitle'][index].split()[2]
+	ssciname.append(genus+"_"+species)
 
-results2=results >> group_by(X.species) >> summarize(mean_pident = X.pident.mean())
+results['ssciname']=ssciname
+results2=results >> group_by(X.ssciname) >> summarize(mean_pident = X.pident.mean())
 results2=results2.sort_values("mean_pident", ascending=False)
 tfile = open('blast_results.summary', 'w')
 tfile.write(results2.to_string(index=False))

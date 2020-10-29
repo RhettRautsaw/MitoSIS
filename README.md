@@ -12,7 +12,7 @@ This script is a wrapper for [MitoZ](https://github.com/linzhi2013/MitoZ) and [M
 | -h, --help      | Show this help message and exit. | 
 | -f1, --fastq1   | fastq read pair 1 (forward). **No default setting.** |
 | -f2, --fastq2   | fastq read pair 2 (reverse). **No default setting.** |
-| -r, --reference | fasta nucleotide reference database. **No default setting.** <br> *Recommend downloading all mitochondrial data for your clade of interest <br> e.g., snakes; [Genbank Example](https://www.ncbi.nlm.nih.gov/nuccore/?term=snakes%5Bporgn%5D+AND+mitochondrion%5Bfilter%5D) <br> Send to > Complete Record > Fasta* |
+| -r, --reference | genbank database. **No default setting.** <br> *Recommend downloading all mitochondrial data for your clade of interest <br> e.g., snakes; [Genbank Example](https://www.ncbi.nlm.nih.gov/nuccore/?term=snakes%5Bporgn%5D+AND+mitochondrion%5Bfilter%5D) <br> Send to > Complete Record > Genbank* |
 | -o, --output    | Prefix for output files. **Default is 'ZZZ'** |
 | -c, --cpu       | Number of threads to be used in each step. **Default is 8** |
 | -M, --memory    | Max memory for Trinity (see [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki/Running-Trinity) for format). **Default is '30G'** |
