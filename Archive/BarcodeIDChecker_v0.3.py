@@ -9,11 +9,6 @@ import subprocess as sp
 from Bio import SeqIO
 from Bio.SeqIO import FastaIO
 from Bio import Phylo
-from Bio import AlignIO
-from Bio.Nexus import Nexus
-from Bio.Alphabet import IUPAC
-from Bio.Phylo.TreeConstruction import DistanceCalculator
-calculator=DistanceCalculator("identity")
 import pandas as pd
 from dfply import *
 import glob
@@ -102,7 +97,6 @@ args=parser.parse_args()
 #memory="55G"
 
 #reference_name_gb="/zfs/venom/Rhett/Data/2020-10_GenbankSnakeMito/2020-10_SnakeMito.gb"
-#reference_name_gb="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/bc2/2020-10_SnakeMito.gb"
 #reference_name = reference_name_gb.split(".gb")[0]+".fasta"
 #references = list(SeqIO.parse(reference_name,"fasta"))
 
@@ -158,7 +152,6 @@ else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converting Genbank to Fasta :::\n")
 	sp.call('rm ' + reference_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	species=[]
-	species2=[]
 	count=1
 	gb = open(reference_name_gb, 'r')
 	for gb_record in SeqIO.parse(gb,'genbank'):
@@ -166,23 +159,12 @@ else:
 		org = gb_record.annotations['organism']
 		acc_org = [acc,org]
 		species.append(acc_org)
-		for feature in gb_record.features:
-			if 'db_xref' in feature.qualifiers:
-				taxid=', '.join(feature.qualifiers['db_xref'])
-				if 'taxon' in taxid:
-					taxid=re.sub(".*taxon\:","", taxid)
-					acc_taxid=[acc,taxid]
-					species2.append(acc_taxid)
 		with open(reference_name, "a") as output_handle:
 			tmp=SeqIO.write(gb_record, output_handle, "fasta")
 			count = 1 + count
 	
 	species_df = pd.DataFrame(species)
 	species_df.to_csv(reference_name+'.sp', index=False, header=False, sep="\t")
-	
-	species_df2 = pd.DataFrame(species2)
-	species_df2 = species_df2.drop_duplicates()
-	species_df2.to_csv(reference_name+'.sp2', index=False, header=False, sep="\t")
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converted %i Genbank records to Fasta :::\n" % count)
 
@@ -229,18 +211,8 @@ else:
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Identifying best reference sequence :::\n")
 	
-	sp.call("samtools idxstats tmp2.bam | sort -k3nr > alternate_references.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("cat alternate_references.txt | awk '$2 > 10000' | cut -f1 | head -1 > best_reference.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	
-	header_list = ["sseqid", "length", "mapped", "unmapped"]
-	alt_ref = pd.read_csv("alternate_references.txt",sep='\t',names=header_list)
-	alt_ref = pd.merge(alt_ref, species, on ='sseqid', how ='left')
-	
-	alt_ref2=alt_ref >> mask(X.length > 10000) #>> group_by(X.species) >> summarize(sum_mapped = X.mapped.sum())
-	#alt_ref2=alt_ref2.sort_values("sum_mapped", ascending=False)
-	tfile = open('alternate_references.txt', 'w')
-	tfile.write(alt_ref2.to_string(index=False))
-	tfile.close()
+	sp.call("samtools idxstats tmp2.bam | awk '$2 > 10000' | sort -k3nr > alternate_references.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("cut -f1 alternate_references.txt | head -1 > best_reference.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	
 	with open('best_reference.txt', 'r') as file:
 		best_reference = file.read().replace('\n', '')
@@ -269,22 +241,12 @@ else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Annotating MITGARD mitogenome with MitoZ :::\n")
 	sp.call("MitoZ.py annotate --genetic_code auto --clade Chordata --outprefix " + output + " --thread_number " + str(num_threads) + " --fastafile tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
-############################################### CHECK IF MITOZ RAN AND MOVE FILES
-
 if os.path.isdir(output + ".result"):
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Moving onto BLAST :::\n")
-	sp.call('mv '+output+'.result mitoz.result', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call('cat mitoz.result/' + output + '.cds mitoz.result/' + output + '.rrna > blast_query.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("perl -pi -e 's/>.*?;/>"+output+";/g' blast_query.fasta", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call('cp mitoz.result/*most_related_species.txt mitoz_most_related_species.txt', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call('cp mitoz.result/'+output+'.fasta '+output+'_mitogenome.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("perl -pi -e 's/>.*?;/>"+output+";/g' "+output+"_mitogenome.fasta", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: MitoZ annotation failed :::\n")
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Genome assembly too fragmented :::\n")
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: We will blast what MITGARD was able to assemble :::\n")
-	sp.call("sed -i 's/>scaffold1/>"+output+"/g' tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call('mv tmp_mitogenome.fa '+output+'_mitogenome.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### CREATE BLAST DATABASE FROM REFERENCE SEQUENCES
 
@@ -297,10 +259,18 @@ else:
 ############################################### BLAST ANNOTATED REGIONS OR FULL MITOGENOME (IF ANNOTATION FAILS) TO REFERENCE DATABASE
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running blast :::\n")
-if os.path.isdir("mitoz.result"):
+if os.path.isdir(output + ".result"):
+	sp.call('mv '+output+'.result mitoz.result', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('cat mitoz.result/' + output + '.cds mitoz.result/' + output + '.rrna > blast_query.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("perl -pi -e 's/>.*?;/>"+output+";/g' blast_query.fasta", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('cp mitoz.result/*most_related_species.txt mitoz_most_related_species.txt', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('cp mitoz.result/'+output+'.fasta '+output+'_mitogenome.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("perl -pi -e 's/>.*?;/>"+output+";/g' "+output+"_mitogenome.fasta", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	sp.call('blastn -query blast_query.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -qcov_hsp_perc 90 -evalue 0.0001 -out blast_results.tab', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	query = list(SeqIO.parse("blast_query.fasta","fasta"))
 else:
+	sp.call("sed -i 's/>scaffold1/>"+output+"/g' tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('mv tmp_mitogenome.fa '+output+'_mitogenome.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	sp.call('blastn -query '+output+'_mitogenome.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -evalue 0.0001 -out blast_results.tab', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	query = list(SeqIO.parse(output+'_mitogenome.fasta',"fasta"))
 
@@ -316,6 +286,7 @@ results2=results2.sort_values("mean_pident", ascending=False)
 tfile = open('blast_results.summary', 'w')
 tfile.write(results2.to_string(index=False))
 tfile.close()
+#results2.to_csv("blast_results_summary.csv",index=False)
 
 sp.call("sort -t$'\t' -k4 -nr blast_results.tab > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 sp.call("mv tmp.tab blast_results.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -336,7 +307,7 @@ if os.path.isdir("../mitoz.result"):
 		ref_seqs=results >> mask(X.qseqid==i) >> select(X.stitle, X.sseq) >> mutate(stitle=">"+X.stitle)
 		fna=[]
 		for index in ref_seqs.index:
-			fna.append(ref_seqs['stitle'][index].replace(" "," "))
+			fna.append(ref_seqs['stitle'][index].replace(" ","_"))
 			fna.append(ref_seqs['sseq'][index].replace("-",""))
 		
 		with open(gene+'.fasta', 'w') as f:
@@ -350,7 +321,6 @@ if os.path.isdir("../mitoz.result"):
 		gene_db = []
 		for seq in query:
 			if seq.id == i:
-				seq.id=seq.id.split(";")[0]
 				gene_db.append(seq)
 		for seq in ref_seqs:
 			gene_db.append(seq)
@@ -378,31 +348,11 @@ else:
 
 ############################################### ALIGNING AND MAKING A PHYLOGENY FOR EACH GENE
 
-dist_summary=pd.DataFrame()
-
 for i in files:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Aligning, Trimming, and Inferring Phylogeny for " + i + " :::\n")
-	gene=i.split(".")[0]
+	sp.call("sed -i 's/ /_/g' "+i, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	sp.call("mafft "+i+" > "+i+".aln", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("trimal -in "+i+".aln -out "+i+".trim -automated1 -keepheader", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("trimal -in "+i+".aln -out "+i+".trim2 -automated1", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("sed -i 's/ /_/g' "+i+".trim", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	AlignIO.convert(i+".trim2", "fasta", gene+".nex",'nexus',alphabet=IUPAC.ambiguous_dna)
-	
-	############################################### CALCULATING ALIGNMENT DISTANCE
-	
-	aln = AlignIO.read(open(i+'.trim2'),'fasta')
-	dm = calculator.get_distance(aln)
-	dist = []
-	for rec in dm.matrix:
-		dist.append(rec[0])
-	
-	df = pd.DataFrame({'sseqid' : dm.names[1:], 'dist' : dist[1:]})
-	df2 = pd.merge(df, species, on ='sseqid', how ='left')
-	dist_summary=dist_summary.append(df2)
-	
-	############################################### RUNNING IQTREE FOR EACH GENE & PRINT RESULTS
-	
+	sp.call("trimal -in "+i+".aln -out "+i+".trim -automated1", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	sp.call("iqtree -s "+i+".trim -bb 1000 -seed 12345", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	if os.path.isfile(i+".trim.contree"):
 		tree = Phylo.read(i+".trim.contree", 'newick')
@@ -410,54 +360,6 @@ for i in files:
 		Phylo.write(tree,i+".contree","newick")
 		Phylo.draw_ascii(tree)
 		sp.call('mv '+i+'.trim.iqtree '+i+'.iqtree',shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-
-sp.call('rm *.trim.*', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-
-############################################### EXPORTING MEAN ALIGNMENT DISTANCES
-
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Aligning, Trimming, and Inferring Phylogeny for " + i + " :::\n")
-dist_summary2 = dist_summary >> group_by(X.species) >> summarize(mean_dist=X.dist.mean())
-dist_summary2=dist_summary2.sort_values("mean_dist")
-tfile = open("alignment_summary.dist", 'w')
-tfile.write(dist_summary2.to_string(index=False))
-tfile.close()
-
-############################################### CONCATENATING GENES
-
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Concatenating Genes and Removing Individuals with > 50% Missing :::\n")
-file_list=sorted(glob.glob('*.nex'))
-nexi =  [(fname, Nexus.Nexus(fname)) for fname in file_list]
-combined = Nexus.combine(nexi)
-combined.write_nexus_data(filename=open('Concatenated.nex', 'w'))
-combined 
-
-############################################### REMOVING SEQUENCES WITH > 50% MISSING, GAPS, OR 'N'
-
-sequences = list(SeqIO.parse('Concatenated.nex',"nexus"))
-sequences2 = []
-for seq in sequences:
-	if (seq.seq.count("N") + seq.seq.count("n") + seq.seq.count("?") + seq.seq.count("-")) / len(seq.seq) < 0.5:
-		tmp=species[species['sseqid'] == seq.id]['species'].tolist()
-		tmp="".join(tmp).replace(" ","_")
-		seq.id=seq.id+"_"+tmp
-		sequences2.append(seq)
-
-out = open("Concatenated.phy","w")
-out.write(' '+str(len(sequences2))+' '+str(len(sequences2[0].seq)))
-for seq in sequences2:
-	out.write("\n")	
-	out.write(seq.id+" "+str(seq.seq))
-
-out.close()
-
-############################################### RUNNING CONCATENATED PHYLOGENY
-
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running Concentated Phylogeny :::\n")
-sp.call("iqtree -s Concatenated.phy -bb 1000 -seed 12345", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-tree = Phylo.read("Concatenated.phy.contree", 'newick')
-tree.root_at_midpoint()
-Phylo.write(tree,"Concatenated.phy.contree2","newick")
-Phylo.draw_ascii(tree)
 
 sp.call('rm *.trim.*', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
