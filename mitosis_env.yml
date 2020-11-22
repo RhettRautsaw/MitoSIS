@@ -1,4 +1,4 @@
-name: barcode_env
+name: mitosis_env
 channels:
   - conda-forge
   - bioconda
@@ -28,3 +28,4 @@ dependencies:
   - mafft=7.471
   - trimal=1.4.1
   - iqtree=2.0.3
+  - kallisto=0.46.2

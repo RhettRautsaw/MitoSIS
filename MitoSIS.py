@@ -19,47 +19,45 @@ from dfply import *
 import glob
 
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, description="""
-  ___                      _     ___ ___   ___ _           _           
- | _ ) __ _ _ _ __ ___  __| |___|_ _|   \ / __| |_  ___ __| |_____ _ _ 
- | _ \/ _` | '_/ _/ _ \/ _` / -_)| || |) | (__| ' \/ -_) _| / / -_) '_|
- |___/\__,_|_| \__\___/\__,_\___|___|___/ \___|_||_\___\__|_\_\___|_|  
-                                                                       
-                                                    
-                     ▄▄▄▄▄▄▄   ▄ ▄▄  ▄  ▄▄ ▄▄▄▄▄▄▄  
-                     █ ▄▄▄ █ ▀ ▀ ▄▀█▀▀ ▄   █ ▄▄▄ █  
-                     █ ███ █ ▀█▀ ▀▀▀▀▄█▄▄█ █ ███ █  
-                     █▄▄▄▄▄█ █▀▄▀█ █▀▄ █ █ █▄▄▄▄▄█  
-                     ▄▄▄▄▄ ▄▄▄█▀█▄▄▄▄▄▄  ▀▄ ▄ ▄ ▄   
-                      ▄▄█  ▄▄▀ █ █ ▄▄█▀▀▀▀ ▀▀█   ▀  
-                      ▄▀▀ ▄▄ ▀▄▄▀▀ ██ ▄▀▀▄    █▄▀   
-                     ▀██ ▄▄▄█ ▀ ▀ ▀ ▄▀ ▀▀██▀▀█▄▄ ▀  
-                      ▄█  ▄▄▄█▀▀ ▄ █▄ ▄ █▀█▀█▀▄▄▀   
-                     █▀  ▄▄▄▀█▀ ▀  ▄██▄▄▀▄▀███ █ ▀  
-                     █ ██▀▀▄█   ██ ▄ ▀▄▀▄███▄▄ ▄█▄  
-                     ▄▄▄▄▄▄▄ █ █▀ ▄ ▄ ▀█▄█ ▄ ███▀▀  
-                     █ ▄▄▄ █ ▄ ▀▀█▄███▄▀▀█▄▄▄█ ▄█   
-                     █ ███ █ █ ▄▀ ▀ ▄▀ ▀██▄▄▄▄██▄▀  
-                     █▄▄▄▄▄█ █▀█ ▄▄▄██▄ ▄▀▀▄█▄▀▄▀   
-                                                    
-This script is a wrapper for MitoZ and MITGARD and is designed extract vertebrate mitochondrial genomes from raw or trimmed sequencing data. It will then blast the resulting mitogenome or barcoding genes (e.g., CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling and produce a phylogeny using IQTREE. 
+       o O       o O       o O       o O       o O       o O
+     o | | O   o | | O   o | | O   o | | O   o | | O   o | | O
+   O | | | | O | | | | O | | | | O | | | | O | | | | O | | | | O
+  O-oO | | o   O | | o   O | | o   O | | o   O | | o   O | | oO-o
+ O---o O o       O o       O o       O o       O o       O o O---o
+O-----O                                                     O-----o
+o-----O                                                     o-----O
+ o---O   ,--.   ,--.,--.  ,--.          ,---.  ,--. ,---.    o---O 
+  o-O    |   `.'   |`--',-'  '-. ,---. '   .-' |  |'   .-'    o-O
+   O     |  |'.'|  |,--.'-.  .-'| .-. |`.  `-. |  |`.  `-.     O
+  O-o    |  |   |  ||  |  |  |  ' '-' '.-'    ||  |.-'    |   O-O
+ O---o   `--'   `--'`--'  `--'   `---' `-----' `--'`-----'   O---o
+O-----o                                                     O-----o
+o-----O                                                     o-----O
+ o---O o O       o O       o O       o O       o O       o O o---O
+  o-Oo | | O   o | | O   o | | O   o | | O   o | | O   o | | Oo-O
+   O | | | | O | | | | O | | | | O | | | | O | | | | O | | | | O
+     O | | o   O | | o   O | | o   O | | o   O | | o   O | | o
+       O o       O o       O o       O o       O o       O o
+
+MitoSIS is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically MitoSIS maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using Kallisto to assess potential sample contamination. It then uses MitoZ and MITGARD to assemble and annotate the full mitochondrial genome and BLASTs the resulting mitogenome or barcoding genes (e.g., CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, MitoSIS uses a MAFFT and IQTREE to calculate alignment distance and infer a phylogeny.
 
 :: PIPELINE ::
-1. Map fastq reads to reference fasta using bwa
-2. Keep reads that successfully mapped using samtools
+1. Map fastq reads to reference fasta using bwa and kallisto
+2. Keep reads that successfully mapped
 3. Assemble mitogenome using MitoZ
 4. If MitoZ fails, identify the best reference sequence
-5. Use MITGARD to assemble mitogenome
-	5.1 Use MitoZ to annotate mitogenome (if not already done)
-6. Extract protein coding/barcoding genes
-7. Blast mitogenome or genes to reference database
-8. Export results and sequences
-9. Align sequences and build phylogeny 
+	4.1 Use MITGARD to assemble mitogenome
+	4.2 Use MitoZ to annotate mitogenome (if not already done)
+5. Extract protein coding/barcoding genes
+6. Blast mitogenome or genes to reference database
+7. Export results and sequences
+8. Align sequences and build phylogeny 
 
 :: EXAMPLE ::
-BarcodeIDChecker.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.fasta -o sample -c 16 -M 55G
+MitoSIS.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.fasta -o sample -c 16 -M 55G
 
 :: CITE :: 
-https://github.com/reptilerhett/BarcodeIDChecker\n\n""")
+https://github.com/reptilerhett/MitoSIS\n\n""")
 
 ###############################################
 
@@ -84,7 +82,11 @@ parser.add_argument("-M","--memory",
 					type=str,
 					default='30G',
 					help="OPTIONAL: Max memory for Trinity assembler, use the same format as Trinity. Default is '30G'")
-parser.add_argument("--version", action='version', version='BarcodeIDChecker v2')
+parser.add_argument("--clade",
+					type=str,
+					default='Chordata',
+					help="Clade used for MitoZ. Options: 'Chordata' or 'Arthropoda'. Default is 'Chordata'")
+parser.add_argument("--version", action='version', version='MitoSIS v1')
 args=parser.parse_args()
 
 ############################################### SETUP
@@ -100,7 +102,16 @@ args=parser.parse_args()
 #output="I0796_Daboia_russelii"
 #num_threads=16
 #memory="55G"
-
+#
+#fastq1_name="/zfs/venom/Rhett/2020_BarcodeTest/test2/CON01_R1.fq"
+#fastq2_name="/zfs/venom/Rhett/2020_BarcodeTest/test2/CON01_R2.fq"
+#output="CON01"
+#num_threads=16
+#memory="55G"
+#reference_name_gb="/zfs/venom/Rhett/2020_BarcodeTest/2020-10_GenbankSnakeMito/2020-10_SnakeMito.gb"
+#reference_name = reference_name_gb.split(".gb")[0]+".fasta"
+#references = list(SeqIO.parse(reference_name,"fasta"))
+#
 #reference_name_gb="/zfs/venom/Rhett/Data/2020-10_GenbankSnakeMito/2020-10_SnakeMito.gb"
 #reference_name_gb="/zfs/venom/Rhett/Data/SeqCap/I0771_Agkistrodon_conanti/bc2/2020-10_SnakeMito.gb"
 #reference_name = reference_name_gb.split(".gb")[0]+".fasta"
@@ -113,47 +124,45 @@ reference_name = reference_name_gb.split(".gb")[0]+".fasta"
 output = args.output
 num_threads = args.cpu
 memory=args.memory
+clade=args.clade
 
 print("""
-  ___                      _     ___ ___   ___ _           _           
- | _ ) __ _ _ _ __ ___  __| |___|_ _|   \ / __| |_  ___ __| |_____ _ _ 
- | _ \/ _` | '_/ _/ _ \/ _` / -_)| || |) | (__| ' \/ -_) _| / / -_) '_|
- |___/\__,_|_| \__\___/\__,_\___|___|___/ \___|_||_\___\__|_\_\___|_|  
-                                                                       
-                                                    
-                     ▄▄▄▄▄▄▄   ▄ ▄▄  ▄  ▄▄ ▄▄▄▄▄▄▄  
-                     █ ▄▄▄ █ ▀ ▀ ▄▀█▀▀ ▄   █ ▄▄▄ █  
-                     █ ███ █ ▀█▀ ▀▀▀▀▄█▄▄█ █ ███ █  
-                     █▄▄▄▄▄█ █▀▄▀█ █▀▄ █ █ █▄▄▄▄▄█  
-                     ▄▄▄▄▄ ▄▄▄█▀█▄▄▄▄▄▄  ▀▄ ▄ ▄ ▄   
-                      ▄▄█  ▄▄▀ █ █ ▄▄█▀▀▀▀ ▀▀█   ▀  
-                      ▄▀▀ ▄▄ ▀▄▄▀▀ ██ ▄▀▀▄    █▄▀   
-                     ▀██ ▄▄▄█ ▀ ▀ ▀ ▄▀ ▀▀██▀▀█▄▄ ▀  
-                      ▄█  ▄▄▄█▀▀ ▄ █▄ ▄ █▀█▀█▀▄▄▀   
-                     █▀  ▄▄▄▀█▀ ▀  ▄██▄▄▀▄▀███ █ ▀  
-                     █ ██▀▀▄█   ██ ▄ ▀▄▀▄███▄▄ ▄█▄  
-                     ▄▄▄▄▄▄▄ █ █▀ ▄ ▄ ▀█▄█ ▄ ███▀▀  
-                     █ ▄▄▄ █ ▄ ▀▀█▄███▄▀▀█▄▄▄█ ▄█   
-                     █ ███ █ █ ▄▀ ▀ ▄▀ ▀██▄▄▄▄██▄▀  
-                     █▄▄▄▄▄█ █▀█ ▄▄▄██▄ ▄▀▀▄█▄▀▄▀   
-                                                    
+       o O       o O       o O       o O       o O       o O
+     o | | O   o | | O   o | | O   o | | O   o | | O   o | | O
+   O | | | | O | | | | O | | | | O | | | | O | | | | O | | | | O
+  O-oO | | o   O | | o   O | | o   O | | o   O | | o   O | | oO-o
+ O---o O o       O o       O o       O o       O o       O o O---o
+O-----O                                                     O-----o
+o-----O                                                     o-----O
+ o---O   ,--.   ,--.,--.  ,--.          ,---.  ,--. ,---.    o---O 
+  o-O    |   `.'   |`--',-'  '-. ,---. '   .-' |  |'   .-'    o-O
+   O     |  |'.'|  |,--.'-.  .-'| .-. |`.  `-. |  |`.  `-.     O
+  O-o    |  |   |  ||  |  |  |  ' '-' '.-'    ||  |.-'    |   O-O
+ O---o   `--'   `--'`--'  `--'   `---' `-----' `--'`-----'   O---o
+O-----o                                                     O-----o
+o-----O                                                     o-----O
+ o---O o O       o O       o O       o O       o O       o O o---O
+  o-Oo | | O   o | | O   o | | O   o | | O   o | | O   o | | Oo-O
+   O | | | | O | | | | O | | | | O | | | | O | | | | O | | | | O
+     O | | o   O | | o   O | | o   O | | o   O | | o   O | | o
+       O o       O o       O o       O o       O o       O o
 """)
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" >>>> starting BarcodeIDChecker...")
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" >>>> starting MitoSIS...")
 CWD = os.getcwd()
 print("\tForward Reads -> "+fastq1_name)
 print("\tReverse Reads -> "+fastq2_name)
 print("\tReference Database -> "+reference_name)
-print("\tOutput -> " + CWD + "/BarcodeIDChecker_results/"+output+"*")
+print("\tOutput -> " + CWD + "/MitoSIS_results/"+output+"*")
 print("\tNumber of CPU -> "+str(num_threads))
 print("\tAmount of memory -> "+memory+"\n")
 
-os.mkdir("BarcodeIDChecker_results")
-os.chdir('BarcodeIDChecker_results')
+os.mkdir("MitoSIS_results")
+os.chdir('MitoSIS_results')
 
 ############################################### PARSE GENBANK
 
 if os.path.isfile(reference_name + ".sp"):
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Genbank to Fasta conversion already done :::\n")
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Genbank to Fasta conversion previously completed :::\n")
 else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converting Genbank to Fasta :::\n")
 	sp.call('rm ' + reference_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -189,10 +198,29 @@ else:
 references = list(SeqIO.parse(reference_name,"fasta"))
 species = pd.read_csv(reference_name+'.sp',sep="\t", names=['sseqid','species']) 
 
+############################################### RUN KALLISTO
+
+if os.path.isfile(reference_name + ".kallisto"):
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: kallisto index previously completed :::\n")
+else:
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running kallisto index :::\n")
+	sp.call('kallisto index -i ' + reference_name + ".kallisto " + reference_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running kallisto :::\n")
+sp.call("kallisto quant -i " + reference_name + ".kallisto -o kallisto -t " + str(num_threads) + " " + fastq1_name + " " + fastq2_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
+kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
+kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
+kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100)
+kallisto_sum=kallisto_sum.sort_values("read_count", ascending=False)
+print(kallisto_sum.to_string(index=False))
+kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+
 ############################################### RUN BWA
 
 if os.path.isfile(reference_name + ".amb"):
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: bwa index already run :::\n")
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: bwa index previously completed :::\n")
 else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running bwa index :::\n")
 	sp.call('bwa index ' + reference_name, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -203,18 +231,18 @@ sp.call("bwa mem -t " + str(num_threads) + " " + reference_name + " " + fastq1_n
 ############################################### EXTRACT MAPPED READS WITH SAMTOOLS
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Sorting/converting sam files :::\n")
-sp.call("samtools sort tmp.sam > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call("samtools sort -@ "+str(num_threads)+" tmp.sam > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Pulling out reads that successfully mapped  :::\n")
-sp.call("samtools view -b -F 4 tmp.bam > tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+#print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Pulling out reads that successfully mapped  :::\n")
+#sp.call("samtools view -b -F 4 tmp.bam > tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converting reads to fastq format :::\n")
-sp.call("samtools fastq -1 tmp_F.fq -2 tmp_R.fq -n tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converting bam to fastq :::\n")
+sp.call("samtools fastq -@ "+str(num_threads)+" -F 4 -1 tmp_F.fq -2 tmp_R.fq -n tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### RUN MITOZ
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running MitoZ assembly :::\n")
-sp.call("MitoZ.py all2 --genetic_code auto --clade Chordata --outprefix " + output + " --thread_number " + str(num_threads) + " --fastq1 tmp_F.fq --fastq2 tmp_R.fq --run_mode 2", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call("MitoZ.py all2 --genetic_code auto --clade "+clade+" --outprefix " + output + " --thread_number " + str(num_threads) + " --fastq1 tmp_F.fq --fastq2 tmp_R.fq --run_mode 2", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### IF MITOZ FAILED, RUN MITGARD
 
@@ -223,31 +251,30 @@ if os.path.isdir(output+".result"):
 else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: MitoZ failed, trying MITGARD :::\n")
 	sp.call("rm -rf " + output + ".tmp/", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("samtools index tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	
 	############################################### IDENTIFY BEST REFERENCE SEQUENCE BY NUMBER OF MAPPED READS
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Identifying best reference sequence :::\n")
 	
-	sp.call("samtools idxstats tmp2.bam | sort -k3nr > alternate_references.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-	sp.call("cat alternate_references.txt | awk '$2 > 10000' | cut -f1 | head -1 > best_reference.txt", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
 	
-	header_list = ["sseqid", "length", "mapped", "unmapped"]
-	alt_ref = pd.read_csv("alternate_references.txt",sep='\t',names=header_list)
-	alt_ref = pd.merge(alt_ref, species, on ='sseqid', how ='left')
-	
-	alt_ref2=alt_ref >> mask(X.length > 10000) #>> group_by(X.species) >> summarize(sum_mapped = X.mapped.sum())
-	#alt_ref2=alt_ref2.sort_values("sum_mapped", ascending=False)
-	tfile = open('alternate_references.txt', 'w')
-	tfile.write(alt_ref2.to_string(index=False))
-	tfile.close()
-	
-	with open('best_reference.txt', 'r') as file:
-		best_reference = file.read().replace('\n', '')
-	
+	if alt_ref.shape[0]==0:
+		sp.call("samtools index tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+		sp.call("samtools idxstats tmp2.bam | sort -k3nr > alternate_references.tsv", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+		alt_ref = pd.read_csv("alternate_references.tsv",sep='\t',names=["sseqid", "length", "read_count", "unmapped"])
+		alt_ref = pd.merge(alt_ref, species, on ='sseqid', how ='left')
+		alt_ref=alt_ref >> mask(X.length > 10000, X.read_count>0) >> drop(X.unmapped)
+		best_ref=alt_ref['sseqid'].iloc[0]
+		print(alt_ref.to_string(index=False))
+		alt_ref.to_csv("alternate_references.tsv",sep='\t',index=False)
+	else:
+		best_ref=alt_ref['sseqid'].iloc[0]
+		print(alt_ref.to_string(index=False))
+		alt_ref.to_csv("alternate_references.tsv",sep='\t',index=False)
+		
 	ref_seq = []
 	for seq in references:
-		if seq.id == best_reference:
+		if seq.id == best_ref:
 			ref_seq.append(seq)
 	
 	handle=open('best_reference.fasta', "w")
@@ -267,7 +294,7 @@ else:
 	############################################### ANNOTATE MITGARD ASSEMBLY WITH MITOZ
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Annotating MITGARD mitogenome with MitoZ :::\n")
-	sp.call("MitoZ.py annotate --genetic_code auto --clade Chordata --outprefix " + output + " --thread_number " + str(num_threads) + " --fastafile tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("MitoZ.py annotate --genetic_code auto --clade "+clade+" --outprefix " + output + " --thread_number " + str(num_threads) + " --fastafile tmp_mitogenome.fa", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### CHECK IF MITOZ RAN AND MOVE FILES
 
@@ -289,7 +316,7 @@ else:
 ############################################### CREATE BLAST DATABASE FROM REFERENCE SEQUENCES
 
 if os.path.isfile(reference_name + ".nin"):
-	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: makeblastdb already run :::\n")
+	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: makeblastdb previously completed :::\n")
 else:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running makeblastdb :::\n")
 	sp.call('makeblastdb -in ' + reference_name + ' -dbtype nucl', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -298,38 +325,38 @@ else:
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Running blast :::\n")
 if os.path.isdir("mitoz.result"):
-	sp.call('blastn -query blast_query.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -qcov_hsp_perc 90 -evalue 0.0001 -out blast_results.tab', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('blastn -query blast_query.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -qcov_hsp_perc 90 -evalue 0.0001 -out blast_results.tsv', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	query = list(SeqIO.parse("blast_query.fasta","fasta"))
 else:
-	sp.call('blastn -query '+output+'_mitogenome.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -evalue 0.0001 -out blast_results.tab', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call('blastn -query '+output+'_mitogenome.fasta -db ' + reference_name + ' -outfmt "6 qseqid sseqid stitle pident evalue bitscore sseq" -num_threads ' + str(num_threads) + ' -max_target_seqs 50 -evalue 0.0001 -out blast_results.tsv', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	query = list(SeqIO.parse(output+'_mitogenome.fasta',"fasta"))
 
 ############################################### EXTRACT BLAST MATCH SEQUENCES
 
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Extracting BLAST results for Phylogenetics :::\n")
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing Mean Percent Identity across genes :::\n")
 header_list = ["qseqid","sseqid","stitle","pident","evalue","bitscore","sseq"]
-results = pd.read_csv("blast_results.tab",sep='\t',names=header_list)
+results = pd.read_csv("blast_results.tsv",sep='\t',names=header_list)
 results = pd.merge(results, species, on ='sseqid', how ='left')
 
-results2=results >> group_by(X.species) >> summarize(mean_pident = X.pident.mean())
-results2=results2.sort_values("mean_pident", ascending=False)
-tfile = open('blast_results.summary', 'w')
-tfile.write(results2.to_string(index=False))
-tfile.close()
+results2=results >> group_by(X.species) >> summarize(Mean_Percent_Identity = X.pident.mean())
+results2=results2.sort_values("Mean_Percent_Identity", ascending=False)
+results3=results2.head(7)
+print(results3.to_string(index=False))
+results2.to_csv("blast_summary.tsv",sep='\t',index=False)
 
-sp.call("sort -t$'\t' -k4 -nr blast_results.tab > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-sp.call("mv tmp.tab blast_results.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-sp.call('rm -rf tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call("sort -t$'\t' -k4nr blast_results.tsv > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call("mv tmp.tab blast_results.tsv", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call('rm -rf kallisto tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 os.mkdir("Phylogenetics")
 os.chdir("Phylogenetics")
 
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Extracting BLAST matches for Phylogenetics :::\n")
 if os.path.isdir("../mitoz.result"):
 	files=[]
 	for i in results.qseqid.unique():
 		gene=i.split(";")[1]
 		files.append(gene+'.fasta')
-		print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Extracting " + gene + " BLAST matches :::\n")
 		
 		############################################### CONVERTING PANDAS DATAFRAME (BLAST OUTFMT 6) TO FASTA
 		
@@ -415,18 +442,18 @@ sp.call('rm *.trim.*', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### EXPORTING MEAN ALIGNMENT DISTANCES
 
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Aligning, Trimming, and Inferring Phylogeny for " + i + " :::\n")
-dist_summary2 = dist_summary >> group_by(X.species) >> summarize(mean_dist=X.dist.mean())
-dist_summary2=dist_summary2.sort_values("mean_dist")
-tfile = open("alignment_summary.dist", 'w')
-tfile.write(dist_summary2.to_string(index=False))
-tfile.close()
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing Mean Alignment Distance across genes :::\n")
+dist_summary2 = dist_summary >> group_by(X.species) >> summarize(Mean_Alignment_Distance=X.dist.mean())
+dist_summary2=dist_summary2.sort_values("Mean_Alignment_Distance")
+dist_summary3=dist_summary2.head(7)
+print(dist_summary3.to_string(index=False))
+dist_summary2.to_csv("../alignment_summary.tsv",sep='\t',index=False)
 
 ############################################### CONCATENATING GENES
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Concatenating Genes and Removing Individuals with > 50% Missing :::\n")
 file_list=sorted(glob.glob('*.nex'))
-nexi =  [(fname, Nexus.Nexus(fname)) for fname in file_list]
+nexi =  [(fname.replace("-","_"), Nexus.Nexus(fname)) for fname in file_list]
 combined = Nexus.combine(nexi)
 combined.write_nexus_data(filename=open('Concatenated.nex', 'w'))
 combined 
