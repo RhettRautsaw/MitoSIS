@@ -151,10 +151,11 @@ print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" >>>> starting MitoS
 CWD = os.getcwd()
 print("\tForward Reads -> "+fastq1_name)
 print("\tReverse Reads -> "+fastq2_name)
-print("\tReference Database -> "+reference_name)
+print("\tReference Database -> "+reference_name_gb)
 print("\tOutput -> " + CWD + "/MitoSIS_results/"+output+"*")
 print("\tNumber of CPU -> "+str(num_threads))
 print("\tAmount of memory -> "+memory+"\n")
+print("\tMitoZ Clade -> "+clade+"\n")
 
 os.mkdir("MitoSIS_results")
 os.chdir('MitoSIS_results')
@@ -212,9 +213,11 @@ sp.call("kallisto quant -i " + reference_name + ".kallisto -o kallisto -t " + st
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
 kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
 kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
-kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100)
-kallisto_sum=kallisto_sum.sort_values("read_count", ascending=False)
-print(kallisto_sum.to_string(index=False))
+kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum(), tpm = X.tpm.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100, tpm_percent=(X.tpm/X.tpm.sum())*100)
+kallisto_sum=kallisto_sum.sort_values("tpm_percent", ascending=False)
+kallisto_sum=kallisto_sum.round(3)
+kallisto_sum2=kallisto_sum >> mask(X.tpm_percent > 1)
+print(kallisto_sum2.to_string(index=False))
 kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
 
 ############################################### RUN BWA
@@ -269,7 +272,11 @@ else:
 		alt_ref.to_csv("alternate_references.tsv",sep='\t',index=False)
 	else:
 		best_ref=alt_ref['sseqid'].iloc[0]
-		print(alt_ref.to_string(index=False))
+		alt_ref=alt_ref.round(3)
+		alt_ref2=alt_ref.head(7)
+		alt_ref2=alt_ref2.reset_index(drop=True)
+		alt_ref2.loc[0,'sseqid']="Selected Reference > "+alt_ref2.loc[0,'sseqid']
+		print(alt_ref2.to_string(index=False))
 		alt_ref.to_csv("alternate_references.tsv",sep='\t',index=False)
 		
 	ref_seq = []
