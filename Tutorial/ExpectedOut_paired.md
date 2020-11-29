@@ -1,5 +1,5 @@
 ```
-MitoSIS_v2.py -f1 CON45_R1.fq.gz -f2 CON45_R2.fq.gz -r ReferenceDB.gb -o CON45 -c 16 -M 55G --clade Chordata
+MitoSIS.py -f1 CON45_R1.fq.gz -f2 CON45_R2.fq.gz -r ReferenceDB.gb -o CON45 -c 16 -M 55G --clade Chordata
 ```
 
 ```

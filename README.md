@@ -127,13 +127,17 @@ We also recommend trimming your own data first prior to running this program. Ex
 trim_galore --paired --phred33 --length 30 -q 20 -o 02_trim 00_raw/{}_F.fastq.gz 00_raw/{}_R.fastq.gz &> {}_tg.log
 ```
 
-Below are two outlines for running `MitoSIS`.
+Below are outlines for running `MitoSIS`.
 ```
 # MitoSIS - paired-end
-MitoSIS.py -f1 {}_F_trim.fastq.gz -f2 {}_R_trim.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o {} -c 16 -M 55G &> MitoSIS.log
+MitoSIS.py -f1 {}_F_trim.fastq.gz -f2 {}_R_trim.fastq.gz -r ReferenceDB.gb -o {} -c 16 -M 55G &> MitoSIS.log
 
 # MitoSIS - single
-MitoSIS.py -s {}_merged.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o {} -c 16 -M 55G &> MitoSIS.log
+MitoSIS.py -s {}_merged.fastq.gz -r ReferenceDB.gb -o {} -c 16 -M 55G &> MitoSIS.log
+
+# MitoSIS - paired-end & fasta+sp reference database
+# NOTE: MitoSIS expects ReferenceDB.fasta.sp to occur in the same directory as ReferenceDB.fasta
+MitoSIS.py -f1 {}_F_trim.fastq.gz -f2 {}_R_trim.fastq.gz -r ReferenceDB.fasta -o {} -c 16 -M 55G &> MitoSIS.log
 ```
 
 # Output
@@ -266,7 +270,7 @@ _|                            |
                              |
                              | GAAZ01001454.1_TSA__Crotalus_horridus...
 
-< ... removed some output from other genes ... >
+< ... removed output from other genes ... >
 
 2020-11-29 16:52:59 ::: Summarizing Mean Alignment Distance across genes :::
 
