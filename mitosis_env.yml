@@ -29,3 +29,4 @@ dependencies:
   - trimal=1.4.1
   - iqtree=2.0.3
   - kallisto=0.46.2
+  - numpy=1.13.3

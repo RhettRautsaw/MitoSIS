@@ -7,21 +7,6 @@
 
 <br>
 
-# Arguments
-
-|       flag      |   description   |
-|-----------------|-----------------|
-| -h, --help      | Show this help message and exit. | 
-| -f1, --fastq1   | fastq read pair 1 (forward). **No default setting.** |
-| -f2, --fastq2   | fastq read pair 2 (reverse). **No default setting.** |
-| -r, --reference | genbank database. **No default setting.** <br> *Recommend downloading all mitochondrial data for your clade of interest <br> e.g., snakes; [Genbank Example](https://www.ncbi.nlm.nih.gov/nuccore/?term=snakes%5Bporgn%5D+AND+mitochondrion%5Bfilter%5D) <br> Send to > Complete Record > Genbank* |
-| -o, --output    | Prefix for output files. **Default is 'ZZZ'** |
-| -c, --cpu       | Number of threads to be used in each step. **Default is 8** |
-| -M, --memory    | Max memory for Trinity (see [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki/Running-Trinity) for format). **Default is '30G'** |
-| --clade         | Clade used for MitoZ. Options: 'Chordata' or 'Arthropoda'. **Default is 'Chordata'** |
-| --version       | Show program's version number and exit |
-|<img width=200/> |<img width=500/>|
-
 # Pipeline
 
 1. Map fastq reads to reference using `bwa` and `kallisto`
@@ -29,13 +14,65 @@
 3. Assemble mitogenome using `MitoZ`
 4. If `MitoZ` fails, identify the best reference sequence
 	- 4.1 Use `MITGARD` to assemble mitogenome
-	- 4.2 Use `MitoZ` to annotate mitogenome (if not already done)
+	- 4.2 Use `MitoZ` to annotate mitogenome
 5. Extract protein coding/barcoding genes
 6. Blast mitogenome or genes to reference database
 7. Export results and sequences
 8. Align sequences and build phylogeny 
 
 ![](MitoSIS_Flowchart.png)
+
+# Arguments
+
+|       flag      |   description   |
+|-----------------|-----------------|
+| -h, --help      | Show this help message and exit. | 
+| -f1, --fastq1   | fastq read pair 1 (forward). **Default: None** |
+| -f2, --fastq2   | fastq read pair 2 (reverse). **Default: None** |
+| -s, --single    | single-end fastq. **Default: None** |
+| -r, --reference | `genbank` *OR* `fasta+sp` database **Default: None** <br> See section below on fasta & custom databases <br> *Recommend downloading all mitochondrial data for your clade of interest <br> e.g., snakes; [Genbank Example](https://www.ncbi.nlm.nih.gov/nuccore/?term=snakes%5Bporgn%5D+AND+mitochondrion%5Bfilter%5D) <br> Send to > Complete Record > Genbank* |
+| -o, --output    | Prefix for output files. **Default: 'ZZZ'** |
+| -c, --cpu       | Number of threads to be used in each step. **Default: 8** |
+| -M, --memory    | Max memory for Trinity (see [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki/Running-Trinity) for format). **Default: '30G'** |
+| --clade         | Clade used for MitoZ. Options: 'Chordata' or 'Arthropoda'. **Default: 'Chordata'** |
+| --convert       | Only perform Genbank to Fasta conversion and create a tab-delimited taxa id file     |
+| --version       | Show program's version number and exit |
+|<img width=200/> |<img width=500/>|
+
+## Fasta & Custom Reference Databases
+Fasta reference databases must be accompanied by a tab-delimited taxa id (`.sp`) file. We refer to this combination of files as a `fasta+sp` database. The tab-delimited taxa id (`.sp`) file must occur in the same directory as the fasta file and have the same filename with `.sp` appended. 
+
+If you have a Genbank database and only want to add additional or custom sequences, we recommend first running `--convert`. 
+
+```
+MitoSIS.py -r ReferenceDB.gb --convert
+```
+
+`--convert` will convert your Genbank file to a `fasta+sp` database without running the rest of MitoSIS. Output will be:
+
+- `ReferenceDB.fasta`
+- `ReferenceDB.fasta.sp`
+
+With the initial `fasta+sp` database created...
+
+Manually add your additional or custom sequences to the fasta and the identifer/taxa information to the `.sp` file. 
+
+### `fasta+sp` Format
+Each fasta sequences must have unique identifiers (similar to Genbank Accession Numbers) and those identifiers must match in the tab-delimited taxa id file.
+
+{ReferenceDB}.fasta 
+```
+>ID_1
+ACTGACTGACTGACTGACTGACTGACTGACTGACTGACTGACTG
+>ID_2
+ACTGACTGACTGACTGACTGACTGACTGACTGACTGACTGACTG
+```
+
+{ReferenceDB}.fasta.sp
+```
+ID_1    Genus species
+ID_2    Genus species
+```
 
 
 # Installation
@@ -82,14 +119,21 @@ MitoSIS.py -h
 ```
 
 # Example
-We recommend trimming your data first prior to running this program. Example trimming using [Trim-Galore](https://github.com/FelixKrueger/TrimGalore) shown below. Depending on whether you are working with DNA or RNA-Seq data, you may want to change the length/quality parameters.
+Before running, we recommend testing `MitoSIS` with our [Tutorial]() dataset. 
+
+We also recommend trimming your own data first prior to running this program. Example trimming using [Trim-Galore](https://github.com/FelixKrueger/TrimGalore) shown below. Depending on whether you are working with DNA or RNA-Seq data, you may want to change the length/quality parameters.
 ```
 # Trimming
 trim_galore --paired --phred33 --length 30 -q 20 -o 02_trim 00_raw/{}_F.fastq.gz 00_raw/{}_R.fastq.gz &> {}_tg.log
 ```
+
+Below are two outlines for running `MitoSIS`.
 ```
-# MitoSIS
+# MitoSIS - paired-end
 MitoSIS.py -f1 {}_F_trim.fastq.gz -f2 {}_R_trim.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o {} -c 16 -M 55G &> MitoSIS.log
+
+# MitoSIS - single
+MitoSIS.py -s {}_merged.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o {} -c 16 -M 55G &> MitoSIS.log
 ```
 
 # Output
@@ -100,12 +144,12 @@ MitoSIS.py -f1 {}_F_trim.fastq.gz -f2 {}_R_trim.fastq.gz -r 2020-09_GenbankSnake
   O-oO | | o   O | | o   O | | o   O | | o   O | | o   O | | oO-o
  O---o O o       O o       O o       O o       O o       O o O---o
 O-----O                                                     O-----o
-o-----O                                                     o-----O
- o---O   ,--.   ,--.,--.  ,--.          ,---.  ,--. ,---.    o---O 
-  o-O    |   `.'   |`--',-'  '-. ,---. '   .-' |  |'   .-'    o-O
-   O     |  |'.'|  |,--.'-.  .-'| .-. |`.  `-. |  |`.  `-.     O
-  O-o    |  |   |  ||  |  |  |  ' '-' '.-'    ||  |.-'    |   O-O
- O---o   `--'   `--'`--'  `--'   `---' `-----' `--'`-----'   O---o
+o-----O         ___  ____ _        _____ _____ _____        o-----O
+ o---O          |  \/  (_) |      /  ___|_   _/  ___|        o---O 
+  o-O           | .  . |_| |_ ___ \ `--.  | | \ `--.          o-O
+   O            | |\/| | | __/ _ \ `--. \ | |  `--. \          O
+  O-o           | |  | | | || (_) /\__/ /_| |_/\__/ /         O-O
+ O---o          \_|  |_/_|\__\___/\____/ \___/\____/         O---o
 O-----o                                                     O-----o
 o-----O                                                     o-----O
  o---O o O       o O       o O       o O       o O       o O o---O
@@ -115,137 +159,149 @@ o-----O                                                     o-----O
        O o       O o       O o       O o       O o       O o
 
 
-2020-11-21 17:36:46 >>>> starting MitoSIS...
-	Forward Reads -> /zfs/venom/Rhett/2020_BarcodeTest/CON01/CON01_R1.fq
-	Reverse Reads -> /zfs/venom/Rhett/2020_BarcodeTest/CON01/CON01_R2.fq
-	Reference Database -> /zfs/venom/Rhett/2020_BarcodeTest/2020-10_GenbankSnakeMito/2020-10_SnakeMito.fasta
-	Output -> /zfs/venom/Rhett/2020_BarcodeTest/CON01/MitoSIS_results/CON01*
+2020-11-29 16:41:34 ::: starting MitoSIS...
+	Forward Reads -> /zfs/venom/Rhett/2020_BarcodeTest/Tutorial/CON45_R1.fq.gz
+	Reverse Reads -> /zfs/venom/Rhett/2020_BarcodeTest/Tutorial/CON45_R2.fq.gz
+	Reference Database -> /zfs/venom/Rhett/2020_BarcodeTest/Tutorial/ReferenceDB.gb
+	Output -> /zfs/venom/Rhett/2020_BarcodeTest/Tutorial/MitoSIS_results/CON45*
 	Number of CPU -> 16
 	Amount of memory -> 55G
+	MitoZ Clade -> Chordata
 
 
-2020-11-21 17:36:46 ::: Genbank to Fasta conversion previously completed :::
+2020-11-29 16:41:34 ::: Converting Genbank to Fasta :::
 
 
-2020-11-21 17:36:48 ::: kallisto index previously completed :::
+2020-11-29 16:41:34 ::: Converted 521 Genbank records to Fasta :::
 
 
-2020-11-21 17:36:48 ::: Running kallisto :::
+2020-11-29 16:41:34 ::: Running kallisto index :::
 
 
-2020-11-21 17:36:53 ::: Summarizing kallisto to assess potential contamination :::
-
-             species  read_count  read_percent
- Crotalus adamanteus  238.000046     98.755187
-   Crotalus horridus    3.000000      1.244813
-
-2020-11-21 17:37:00 ::: bwa index previously completed :::
+2020-11-29 16:41:34 ::: Running kallisto :::
 
 
-2020-11-21 17:37:00 ::: Running bwa mem :::
+2020-11-29 16:41:34 ::: Summarizing kallisto to assess potential contamination :::
+
+                species  read_count         tpm  read_percent  tpm_percent
+    Crotalus adamanteus      3389.0  850947.699        85.044       85.095
+ Agkistrodon piscivorus       398.0   99625.600         9.987        9.963
+      Crotalus horridus       198.0   49427.400         4.969        4.943
+
+2020-11-29 16:41:34 ::: Running bwa index :::
 
 
-2020-11-21 17:37:01 ::: Sorting/converting sam files :::
+2020-11-29 16:41:35 ::: Running bwa mem :::
 
 
-2020-11-21 17:37:01 ::: Converting bam to fastq :::
+2020-11-29 16:41:35 ::: Sorting/converting sam files :::
 
 
-2020-11-21 17:37:01 ::: Running MitoZ assembly :::
+2020-11-29 16:41:35 ::: Converting bam to fastq :::
 
 
-2020-11-21 17:37:02 ::: MitoZ failed, trying MITGARD :::
+2020-11-29 16:41:35 ::: Running MitoZ assembly :::
 
 
-2020-11-21 17:37:02 ::: Identifying best reference sequence :::
-
-      sseqid  length  read_count              species
-  MH626511.1   17242       119.0  Crotalus adamanteus
- NC_041524.1   17242       119.0  Crotalus adamanteus
- NC_014400.1   17260         1.5    Crotalus horridus
-  HM641837.1   17260         1.5    Crotalus horridus
-
-2020-11-21 17:37:03 ::: Running MITGARD :::
+2020-11-29 16:41:36 ::: MitoZ failed, trying MITGARD :::
 
 
-2020-11-21 17:38:21 ::: Annotating MITGARD mitogenome with MitoZ :::
+2020-11-29 16:41:36 ::: Identifying best reference sequence :::
+
+                           sseqid  length  read_count                 species
+ Selected Reference > NC_041524.1   17242     1693.75     Crotalus adamanteus
+                       MH626511.1   17242     1693.75     Crotalus adamanteus
+                      NC_009768.1   17213      199.00  Agkistrodon piscivorus
+                       DQ523161.1   17213      199.00  Agkistrodon piscivorus
+                       HM641837.1   17260       99.00       Crotalus horridus
+                      NC_014400.1   17260       99.00       Crotalus horridus
+
+2020-11-29 16:41:36 ::: Running MITGARD :::
 
 
-2020-11-21 17:46:02 ::: Moving onto BLAST :::
+2020-11-29 16:44:07 ::: Annotating MITGARD mitogenome with MitoZ :::
 
 
-2020-11-21 17:46:02 ::: makeblastdb previously completed :::
+2020-11-29 16:51:43 ::: Moving onto BLAST :::
 
 
-2020-11-21 17:46:02 ::: Running blast :::
+2020-11-29 16:51:43 ::: Running makeblastdb :::
 
 
-2020-11-21 17:46:02 ::: Summarizing Mean Percent Identity across genes :::
-
-                     species  Mean_Percent_Identity
-         Crotalus adamanteus              99.808421
- Crotalus oreganus caliginis              90.370000
-         Crotalus mitchellii              90.080000
-   Crotalus oreganus abyssus              90.040000
-   Crotalus oreganus helleri              89.746667
-           Crotalus cerberus              89.698511
-    Crotalus viridis nuntius              89.690000
-
-2020-11-21 17:46:06 ::: Extracting BLAST matches for Phylogenetics :::
+2020-11-29 16:51:43 ::: Running BLAST :::
 
 
-2020-11-21 17:46:06 ::: Aligning, Trimming, and Inferring Phylogeny for ND1.fasta :::
+2020-11-29 16:51:44 ::: Summarizing Mean Percent Identity across genes :::
 
-                             , GBEX01002025.1_TSA__Crotalus_adamante...
-                             |
-                             | CON01_CON01_ND1_len_981__2537_3517____
-                             |
-                             | NC_041524.1_Crotalus_adamanteus_mitoc...
-                             |
-                  ___________| MH626511.1_Crotalus_adamanteus_mitoch...
-                 |           |
-                 |           | JU175111.1_TSA__Crotalus_adamanteus_C...
-             ____|
-            |    |               , NC_014400.1_Crotalus_horridus_mitocho...
-            |    |            ___|
-            |    |           |   | HM641837.1_Crotalus_horridus_mitochon...
-  __________|    |___________|
-            |                , GBKC01002148.1_TSA__Crotalus_horridus...
-            |                |
-            |                | GAAZ01001454.1_TSA__Crotalus_horridus...
-            |
-            |__________________ MK313588.1_Crotalus_cerastes_voucher_...
+                    species  Mean_Percent_Identity
+        Crotalus adamanteus              99.838545
+ Crotalus horridus horridus              96.175000
+          Crotalus horridus              89.570667
+     Agkistrodon piscivorus              84.574576
+
+2020-11-29 16:51:45 ::: Extracting BLAST matches for Phylogenetics :::
 
 
-2020-11-21 17:50:01 ::: Summarizing Mean Alignment Distance across genes :::
+2020-11-29 16:51:45 ::: Aligning, Trimming, and Inferring Phylogeny for ND1.fasta :::
 
-                     species  Mean_Alignment_Distance
-         Crotalus adamanteus                 0.001493
-           Crotalus cerberus                 0.102720
-           Crotalus horridus                 0.104204
- Crotalus oreganus caliginis                 0.105366
-   Crotalus oreganus helleri                 0.105685
-         Crotalus mitchellii                 0.108293
-  Crotalus oreganus oreganus                 0.111545
-
-2020-11-21 17:50:01 ::: Concatenating Genes and Removing Individuals with > 50% Missing :::
-
-
-2020-11-21 17:50:04 ::: Running Concentated Phylogeny :::
-
-                                             , CON01_
-  ___________________________________________|
- |                                           , NC_041524.1_Crotalus_adamanteus
- |                                           |
-_|                                           | MH626511.1_Crotalus_adamanteus
+                                   , NC_009768.1_Agkistrodon_piscivorus_mi...
+  _________________________________|
+ |                                 | DQ523161.1_Agkistrodon_piscivorus_mit...
  |
- |                                           , NC_014400.1_Crotalus_horridus
- |___________________________________________|
-                                             | HM641837.1_Crotalus_horridus
+ |                            , NC_041524.1_Crotalus_adamanteus_mitoc...
+ |                            |
+ |                            | CON45_CON45_ND1_len_981__2537_3517____
+_|                            |
+ |                            | GBEX01002025.1_TSA__Crotalus_adamante...
+ |                            |
+ |            ________________| MH626511.1_Crotalus_adamanteus_mitoch...
+ |           |                |
+ |           |                | JU175111.1_TSA__Crotalus_adamanteus_C...
+ |___________|
+             |                     , NC_014400.1_Crotalus_horridus_mitocho...
+             |                _____|
+             |               |     | HM641837.1_Crotalus_horridus_mitochon...
+             |_______________|
+                             , GBKC01002148.1_TSA__Crotalus_horridus...
+                             |
+                             | GAAZ01001454.1_TSA__Crotalus_horridus...
+
+< ... removed some output from other genes ... >
+
+2020-11-29 16:52:59 ::: Summarizing Mean Alignment Distance across genes :::
+
+                    species  Mean_Alignment_Distance
+        Crotalus adamanteus                 0.023411
+          Crotalus horridus                 0.162659
+     Agkistrodon piscivorus                 0.200809
+ Crotalus horridus horridus                 0.399161
+
+2020-11-29 16:52:59 ::: Concatenating Genes and Removing Individuals with > 50% Missing :::
 
 
-2020-11-21 17:50:05 ::: FINISHED :::
+2020-11-29 16:53:00 ::: Running Concatenated Phylogeny :::
+
+                                      _____ EF669477.1_Agkistrodon_piscivorus
+  ___________________________________|
+ |                                   |   , DQ523161.1_Agkistrodon_piscivorus
+ |                                   |___|
+ |                                       | NC_009768.1_Agkistrodon_piscivorus
+_|
+ |                                     , NC_041524.1_Crotalus_adamanteus
+ |                                     |
+ |               ______________________| CON45_
+ |              |                      |
+ |______________|                      | MH626511.1_Crotalus_adamanteus
+                |
+                |                         , NC_014400.1_Crotalus_horridus
+                |_________________________|
+                                          | HM641837.1_Crotalus_horridus
+
+
+2020-11-29 16:53:02 ::: FINISHED :::
+
 ```
+
 
 If `MitoZ` is successful (for original assembly or annotation after `MITGARD`), then you should expect the following output files. This includes a summary of the blast results (mean percent identity to different species), the raw blast results, the mitochondrial genome, `MitoZ` annotation results, and phylogenies for each gene. The log file (or STDOUT if log file not saved) will print each phylogeny. 
 ```
@@ -316,6 +372,7 @@ Because this program only works as a wrapper for other programs, we recommend th
 - [Samtools](http://www.htslib.org/)
 - [BLAST](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
 - [PANDAS](https://pandas.pydata.org/)
+- [NUMPY](https://numpy.org/)
 - [dfply](https://github.com/kieferk/dfply)
 - [BioPython](https://biopython.org/)
 - [MAFFT](https://mafft.cbrc.jp/alignment/software/)
