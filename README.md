@@ -119,7 +119,7 @@ MitoSIS.py -h
 ```
 
 # Example
-Before running, we recommend testing `MitoSIS` with our [Tutorial]() dataset. 
+Before running, we recommend testing `MitoSIS` with our [Tutorial](https://github.com/reptilerhett/MitoSIS/tree/master/Tutorial) dataset. 
 
 We also recommend trimming your own data first prior to running this program. Example trimming using [Trim-Galore](https://github.com/FelixKrueger/TrimGalore) shown below. Depending on whether you are working with DNA or RNA-Seq data, you may want to change the length/quality parameters.
 ```

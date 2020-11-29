@@ -33,4 +33,4 @@ MitoSIS.py -s CON45_merge.fq.gz -r ReferenceDB.gb -o CON45 -c 8 -M 16G --clade C
 
 # Expected Output
 
-See `ExpectedOut_paired.md` and `ExpectedOut_single.md`
+See [`ExpectedOut_paired.md`](https://github.com/reptilerhett/MitoSIS/blob/master/Tutorial/ExpectedOut_paired.md) and [`ExpectedOut_single.md`](https://github.com/reptilerhett/MitoSIS/blob/master/Tutorial/ExpectedOut_single.md)
