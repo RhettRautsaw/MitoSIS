@@ -5,8 +5,6 @@
 
  `MitoSIS` (Mitochondrial Species Identification System) is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically, `MitoSIS` maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using [`Kallisto`](https://pachterlab.github.io/kallisto/) to assess potential sample contamination. It then uses [`MitoZ`](https://github.com/linzhi2013/MitoZ) and [`MITGARD`](https://github.com/pedronachtigall/MITGARD) to assemble and annotate the full mitochondrial genome and BLASTs the resulting mitogenome or barcoding genes (*e.g.*, CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, `MitoSIS` uses a `MAFFT` and [`IQ-TREE`](http://www.iqtree.org/) to calculate alignment distance and infer a phylogeny.
 
-<br>
-
 # Pipeline
 
 1. Map fastq reads to reference using `bwa` and `kallisto`
@@ -40,7 +38,7 @@
 |<img width=200/> |<img width=500/>|
 
 ## Fasta & Custom Reference Databases
-Fasta reference databases must be accompanied by a tab-delimited taxa id (`.sp`) file. We refer to this combination of files as a `fasta+sp` database. The tab-delimited taxa id (`.sp`) file must occur in the same directory as the fasta file and have the same filename with `.sp` appended. 
+Fasta reference databases must be accompanied by a tab-delimited taxa id (`.sp`) file. We refer to this combination of files as a `fasta+sp` database. The tab-delimited taxa id (`.sp`) file must occur in the same directory as the fasta file and have the same filename with `.sp` appended (*i.e.*, ReferenceDB.fasta and ReferenceDB.fasta.sp).
 
 If you have a Genbank database and only want to add additional or custom sequences, we recommend first running `--convert`. 
 
@@ -58,7 +56,7 @@ With the initial `fasta+sp` database created...
 Manually add your additional or custom sequences to the fasta and the identifer/taxa information to the `.sp` file. 
 
 ### `fasta+sp` Format
-Each fasta sequences must have unique identifiers (similar to Genbank Accession Numbers) and those identifiers must match in the tab-delimited taxa id file.
+Each fasta sequences must have unique identifiers (similar to Genbank Accession Numbers) and those identifiers must match in the tab-delimited taxa id file. Ensure to not have descriptions in the fasta header (i.e., no spaces " " in the header, only the sequence id).
 
 {ReferenceDB}.fasta 
 ```
