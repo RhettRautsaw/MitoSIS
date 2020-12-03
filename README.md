@@ -86,6 +86,9 @@ echo "export PATH=\$PATH:$PWD" >> ~/.bash_profile
 
 # Clone MITGARD Repository 
 git clone https://github.com/pedronachtigall/MITGARD.git
+# Fix shebangs in MITGARD supporting scripts
+sed -i '1 s/^.*$/\#\!\/usr\/bin\/env python/' MITGARD/bin/sam2msa.py
+sed -i '1 s/^.*$/\#\!\/usr\/bin\/env python/' MITGARD/bin/msa2consensus.py
 echo "export PATH=\$PATH:$PWD/MITGARD/bin" >> ~/.bash_profile
 
 # Clone MitoZ Repository
@@ -105,11 +108,7 @@ conda activate mitosis_env
 pip install dfply
 
 # Install Taxonomy Database for MitoZ
-python
-from ete3 import NCBITaxa
-ncbi = NCBITaxa()
-ncbi.update_taxonomy_database()
-quit()
+python MITGARD/install_NCBITaxa.py
 
 # YOU'RE READY TO GO
 # Check if MitoSIS.py is in your path

@@ -20,7 +20,7 @@ MitoSIS.py -r ReferenceDB.gb --convert
 # Running Paired-End
 
 ```
-MitoSIS.py -f1 CON01_F.fq.gz -f2 CON01_R.fq.gz -r ReferenceDB.gb -o CON01 -c 8 -M 16G --clade Chordata
+MitoSIS.py -f1 CON45_R1.fq.gz -f2 CON45_R2.fq.gz -r ReferenceDB.gb -o CON45 -c 8 -M 16G --clade Chordata
 ```
 
 # Running Single-End
