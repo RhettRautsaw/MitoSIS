@@ -275,7 +275,7 @@ if args.single == None and args.fastq1 != None and args.fastq2 != None:
 	############################################### EXTRACT MAPPED READS WITH SAMTOOLS
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Sorting/converting sam files :::\n")
-	sp.call("samtools collate -@ "+str(num_threads)+" tmp.sam > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("samtools collate -@ "+str(num_threads)+" tmp.sam -O > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	
 	#print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Pulling out reads that successfully mapped  :::\n")
 	#sp.call("samtools view -b -F 4 tmp.bam > tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
@@ -399,7 +399,7 @@ if args.single != None and args.fastq1 == None and args.fastq2 == None:
 	############################################### EXTRACT MAPPED READS WITH SAMTOOLS
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Sorting/converting sam files :::\n")
-	sp.call("samtools collate -@ "+str(num_threads)+" tmp.sam > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+	sp.call("samtools collate -@ "+str(num_threads)+" tmp.sam -O > tmp.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 	
 	#print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Pulling out reads that successfully mapped  :::\n")
 	#sp.call("samtools view -b -F 4 tmp.bam > tmp2.bam", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
