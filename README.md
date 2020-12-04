@@ -7,16 +7,16 @@
 
 # Pipeline
 
-1. Map fastq reads to reference using `bwa` and `kallisto`
-2. Keep reads that successfully mapped
-3. Assemble mitogenome using `MitoZ`
-4. If `MitoZ` fails, identify the best reference sequence
-	- 4.1 Use `MITGARD` to assemble mitogenome
-	- 4.2 Use `MitoZ` to annotate mitogenome
-5. Extract protein coding/barcoding genes
-6. Blast mitogenome or genes to reference database
-7. Export results and sequences
-8. Align sequences and build phylogeny 
+- Map fastq reads to reference using `bwa` and `kallisto`
+- Keep reads that successfully mapped
+- Assemble mitogenome using `MitoZ`
+- If `MitoZ` fails, identify the best reference sequence
+	- Use `MITGARD` to assemble mitogenome
+	- Use `MitoZ` to annotate mitogenome
+- Extract protein coding/barcoding genes
+- Blast mitogenome or genes to reference database
+- Export results and sequences
+- Align sequences and build phylogeny 
 
 ![](MitoSIS_Flowchart.png)
 
@@ -37,10 +37,15 @@
 | --version       | Show program's version number and exit |
 |<img width=200/> |<img width=500/>|
 
+## Reference Databases
+The user can download nucleotide sequences from the taxonomic group of interest from the database of [NCBI](https://www.ncbi.nlm.nih.gov/genbank/). For instance, the user can search for "snakes[porgn]AND mitochondrion[filter]" and send all complete records to a Genbank formatted file. Then the GenBank fromat file is used as input in the option ```-r``` to be used as reference in MitoSIS pipeline.
+
+The GenBank format file is converted into two files to generate a `fasta+sp` database, which is used in all steps of MitoSIS workflow. To improve the reference database by adding custom/private sequences, see the section below.
+
 ## Fasta & Custom Reference Databases
 Fasta reference databases must be accompanied by a tab-delimited taxa id (`.sp`) file. We refer to this combination of files as a `fasta+sp` database. The tab-delimited taxa id (`.sp`) file must occur in the same directory as the fasta file and have the same filename with `.sp` appended (*i.e.*, ReferenceDB.fasta and ReferenceDB.fasta.sp).
 
-If you have a Genbank database and only want to add additional or custom sequences, we recommend first running `--convert`. 
+If you have a Genbank database and only want to add additional or custom/private sequences, we recommend first running `--convert`. 
 
 ```
 MitoSIS.py -r ReferenceDB.gb --convert
