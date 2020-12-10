@@ -1,7 +1,7 @@
 
 ![](logo.png)
 
-## Rhett M. Rautsaw & Pedro Nachtigall 
+## Rhett M. Rautsaw & Pedro G. Nachtigall 
 
  `MitoSIS` (Mitochondrial Species Identification System) is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically, `MitoSIS` maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using [`Kallisto`](https://pachterlab.github.io/kallisto/) to assess potential sample contamination. It then uses [`MitoZ`](https://github.com/linzhi2013/MitoZ) and [`MITGARD`](https://github.com/pedronachtigall/MITGARD) to assemble and annotate the full mitochondrial genome and BLASTs the resulting mitogenome or barcoding genes (*e.g.*, CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, `MitoSIS` uses a `MAFFT` and [`IQ-TREE`](http://www.iqtree.org/) to calculate alignment distance and infer a phylogeny.
 
@@ -310,7 +310,7 @@ _|
 2020-11-29 16:53:01 ::: Generating plots and HTML output :::
 
 
-2020-11-29 16:53:02 ::: FINISHED :::
+2020-11-29 16:53:06 ::: FINISHED :::
 
 ```
 
