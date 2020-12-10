@@ -395,6 +395,7 @@ Because this program only works as a wrapper for other programs, we recommend th
 - [BLAST](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
 - [PANDAS](https://pandas.pydata.org/)
 - [NUMPY](https://numpy.org/)
+- [Matplotlib](https://matplotlib.org/)
 - [dfply](https://github.com/kieferk/dfply)
 - [BioPython](https://biopython.org/)
 - [MAFFT](https://mafft.cbrc.jp/alignment/software/)
