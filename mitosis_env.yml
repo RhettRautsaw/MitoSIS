@@ -30,3 +30,5 @@ dependencies:
   - iqtree
   - kallisto
   - numpy
+  - pylab
+  - matplotlib
