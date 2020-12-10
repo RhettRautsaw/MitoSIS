@@ -307,6 +307,9 @@ _|
                                           | HM641837.1_Crotalus_horridus
 
 
+2020-11-29 16:53:01 ::: Generating plots and HTML output :::
+
+
 2020-11-29 16:53:02 ::: FINISHED :::
 
 ```
