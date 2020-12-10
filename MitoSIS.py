@@ -34,6 +34,18 @@ except:
 	quit()
 
 try:
+	import pylab
+except:
+	print("Error: pylab is not properly installed.")
+	quit()
+
+try:
+	import matplotlib as mpl
+except:
+	print("Error: matplotlib is not properly installed.")
+	quit()
+
+try:
 	from dfply import *
 except:
 	print("Error: dfply is not properly installed.")
@@ -65,9 +77,7 @@ o-----O                                                     o-----O
    O | | | | O | | | | O | | | | O | | | | O | | | | O | | | | O
      O | | o   O | | o   O | | o   O | | o   O | | o   O | | o
        O o       O o       O o       O o       O o       O o
-
 MitoSIS is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically MitoSIS maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using Kallisto to assess potential sample contamination. It then uses MitoZ and MITGARD to assemble and annotate the full mitochondrial genome and BLASTs the resulting mitogenome or barcoding genes (e.g., CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, MitoSIS uses a MAFFT and IQTREE to calculate alignment distance and infer a phylogeny.
-
 :: PIPELINE ::
 1. Map fastq reads to reference fasta using bwa and kallisto
 2. Keep reads that successfully mapped
@@ -79,10 +89,8 @@ MitoSIS is a wrapper for mitochondrial genome assembly and identification of sam
 6. Blast mitogenome or genes to reference database
 7. Export results and sequences
 8. Align sequences and build phylogeny 
-
 :: EXAMPLE ::
 MitoSIS.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o sample -c 16 -M 55G
-
 :: CITE :: 
 https://github.com/reptilerhett/MitoSIS\n\n""")
 
@@ -663,5 +671,80 @@ Phylo.write(tree,"Concatenated.phy.contree2","newick")
 Phylo.draw_ascii(tree)
 
 sp.call('rm *.trim.*', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+
+############################################### GENERATING PLOTS AND HTML OUTPUT
+
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Generating plots and HTML output :::\n")
+
+def get_label(leaf):
+	return leaf.name
+
+def plot_tree(tree, out):
+	tree = Phylo.read(tree, "newick")
+	tree.ladderize()
+	mpl.rc('font', size=6)
+	Phylo.draw(tree, do_show=False, label_func=get_label)
+	pylab.axis("off")
+	pylab.savefig(out, bbox_inches="tight", format="png")
+	pylab.close("all")
+
+def bar_plot(tsv, yvalue, out, ymax):
+	df = pd.read_csv(tsv, sep="\t")
+	ax = df.plot.bar(x='species', y=yvalue, rot=45, legend=None)
+	ax.set_ylim(0,ymax)
+	mpl.pyplot.savefig(out, bbox_inches="tight", format="png")
+
+bar_plot("../kallisto_contamination.tsv", "read_percent", "../kallisto_contamination.png", 100)
+bar_plot("../blast_summary.tsv", "Mean_Percent_Identity", "../blast_summary.png", 100)
+bar_plot("../alignment_summary.tsv", "Mean_Alignment_Distance", "../alignment_summary.png", 1)
+
+HTML = open("../MitoSIS_summary_output.html", "w")
+HTML.write("""<!DOCTYPE HTML>
+<html lang = "en">
+<head>
+  <title> MitoSIS summary output </title>
+  <meta charset = "UTF-8" />
+</head>
+<body>
+  <h1><a href="https://github.com/reptilerhett/MitoSIS">MitoSIS</a> summary output</h1>
+
+  <h2>Potential contamination analysis using Kallisto</h2>
+  <p>
+    <img src = "kallisto_contamination.png"
+         alt = "kallisto_contamination" />
+  </p>
+  <p>
+    This chart shows the percentage of mitochondrial reads mapping to distinct species available at the reference DB.
+  </p>
+
+  <h2>Mean Percent Identity across genes</h2>
+  <p>
+    <img src = "blast_summary.png"
+         alt = "blast_summary" />
+  </p>
+  <p>This chart shows the percent identity among the query dataset and the species available at the reference DB.</p>
+
+  <h2>Mean Alignment Distance across genes</h2>
+  <p>
+    <img src = "alignment_summary.png"
+         alt = "alignment_summary" />
+  </p>
+  <p>This chart shows the mean alignment distance among the query dataset and the species available at the reference DB.</p>
+
+  <h2>Phylogenetic trees</h2>
+""")
+
+for tree in os.listdir('.'):
+	if tree.endswith(".contree"):
+		out = tree.replace(".contree",".png")
+		plot_tree(tree, out)
+		T = tree.replace(".fasta.contree", "")
+		HTML.write("  <h3>"+T+"</h3>\n  <p>\n")
+		HTML.write("    <img src = \"Phylogenetics/"+out+"\"\n")
+		HTML.write("         alt = \"+T+_plot\" />\n  </p>\n")
+		HTML.write("  <p> Phylogenetic tree for "+T+".</p>\n\n")
+
+HTML.write("</body>\n</html>")
+HTML.close()
 
 print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: FINISHED :::\n")
