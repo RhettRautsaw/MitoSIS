@@ -54,7 +54,7 @@ This script is a wrapper for MitoZ and MITGARD and is designed extract vertebrat
 BarcodeIDChecker.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.fasta -o sample -c 16 -M 55G
 
 :: CITE :: 
-https://github.com/reptilerhett/BarcodeIDChecker\n\n""")
+https://github.com/RhettRautsaw/BarcodeIDChecker\n\n""")
 
 ###############################################
 

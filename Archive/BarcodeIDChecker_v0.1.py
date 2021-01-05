@@ -20,7 +20,7 @@ This script is a wrapper for MitoZ and MITGARD and is designed extract vertebrat
 :: EXAMPLES :: \n\
 BarcodeIDChecker.py -f1 {}_F.fq -f2 {}_R.fq -r mito_ref.fasta -o {}\n\n\
 ::CITE:: \n\
-https://github.com/reptilerhett/BarcodeIDChecker\n\n')
+https://github.com/RhettRautsaw/BarcodeIDChecker\n\n')
 
 ###############################################
 

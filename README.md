@@ -85,7 +85,7 @@ ID_2    Genus species
 **Conda Installation**
 ```
 # Clone this Repository
-git clone https://github.com/reptilerhett/MitoSIS.git
+git clone https://github.com/RhettRautsaw/MitoSIS.git
 cd MitoSIS
 echo "export PATH=\$PATH:$PWD" >> ~/.bash_profile
 
@@ -121,7 +121,7 @@ MitoSIS.py -h
 ```
 
 # Example
-Before running, we recommend testing `MitoSIS` with our [Tutorial](https://github.com/reptilerhett/MitoSIS/tree/master/Tutorial) dataset. 
+Before running, we recommend testing `MitoSIS` with our [Tutorial](https://github.com/RhettRautsaw/MitoSIS/tree/master/Tutorial) dataset. 
 
 We also recommend trimming your own data first prior to running this program. Example trimming using [Trim-Galore](https://github.com/FelixKrueger/TrimGalore) shown below. Depending on whether you are working with DNA or RNA-Seq data, you may want to change the length/quality parameters.
 ```
@@ -367,7 +367,7 @@ MitoSIS_results/
 
 # Cite
 Because this program only works as a wrapper for other programs, we recommend that you cite them as well. 
-- [MitoSIS](https://github.com/reptilerhett/MitoSIS)
+- [MitoSIS](https://github.com/RhettRautsaw/MitoSIS)
 - [MitoZ](https://github.com/linzhi2013/MitoZ)
 - [MITGARD](https://github.com/pedronachtigall/MITGARD)
   - [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki)

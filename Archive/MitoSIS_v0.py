@@ -57,7 +57,7 @@ MitoSIS is a wrapper for mitochondrial genome assembly and identification of sam
 MitoSIS.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.fasta -o sample -c 16 -M 55G
 
 :: CITE :: 
-https://github.com/reptilerhett/MitoSIS\n\n""")
+https://github.com/RhettRautsaw/MitoSIS\n\n""")
 
 ###############################################
 

@@ -92,7 +92,7 @@ MitoSIS is a wrapper for mitochondrial genome assembly and identification of sam
 :: EXAMPLE ::
 MitoSIS.py -f1 sample_F.fastq.gz -f2 sample_R.fastq.gz -r 2020-09_GenbankSnakeMito.gb -o sample -c 16 -M 55G
 :: CITE :: 
-https://github.com/reptilerhett/MitoSIS\n\n""")
+https://github.com/RhettRautsaw/MitoSIS\n\n""")
 
 ###############################################
 
@@ -706,7 +706,7 @@ HTML.write("""<!DOCTYPE HTML>
   <meta charset = "UTF-8" />
 </head>
 <body>
-  <h1><a href="https://github.com/reptilerhett/MitoSIS">MitoSIS</a> summary output</h1>
+  <h1><a href="https://github.com/RhettRautsaw/MitoSIS">MitoSIS</a> summary output</h1>
 
   <h2>Potential contamination analysis using Kallisto</h2>
   <p>
