@@ -196,7 +196,8 @@ if args.convert==False:
 	print("\tOutput -> " + CWD + "/MitoSIS_results/"+output+"*")
 	print("\tNumber of CPU -> "+str(num_threads))
 	print("\tAmount of memory -> "+memory)
-	print("\tMitoZ Clade -> "+clade+"\n")
+	print("\tMitoZ Clade -> "+clade)
+	print("\tVersion --> MitoSIS v1\n")
 	
 	os.mkdir("MitoSIS_results")
 	os.chdir('MitoSIS_results')
