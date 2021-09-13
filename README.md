@@ -3,20 +3,20 @@
 
 ## Rhett M. Rautsaw & Pedro G. Nachtigall 
 
- `MitoSIS` (Mitochondrial Species Identification System) is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically, `MitoSIS` maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using [`Kallisto`](https://pachterlab.github.io/kallisto/) to assess potential sample contamination. It then uses [`MitoZ`](https://github.com/linzhi2013/MitoZ) and [`MITGARD`](https://github.com/pedronachtigall/MITGARD) to assemble and annotate the full mitochondrial genome and BLASTs the resulting mitogenome or barcoding genes (*e.g.*, CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, `MitoSIS` uses a `MAFFT` and [`IQ-TREE`](http://www.iqtree.org/) to calculate alignment distance and infer a phylogeny.
+ `MitoSIS` (Mitochondrial Species Identification System) is a wrapper for mitochondrial genome assembly and identification of sample contamination or mislabeling. Specifically, `MitoSIS` maps raw or trimmed reads to a database of reference mitochondrial sequences. It calculates the percentage of reads that map to different species using [`Kallisto`](https://pachterlab.github.io/kallisto/) to assess potential sample contamination. It then uses [`MITGARD`](https://github.com/pedronachtigall/MITGARD) to assemble and [`MitoZ`](https://github.com/linzhi2013/MitoZ) annotate the full mitochondrial genome. It then BLASTs the resulting mitogenome or barcoding genes (*e.g.*, CYTB, COX1, ND4, 16S, etc.) to check for sample mislabeling. Finally, `MitoSIS` uses a `MAFFT` and [`IQ-TREE`](http://www.iqtree.org/) to calculate phylogenetic distance to closely related species.
 
 # Pipeline
 
-- Map fastq reads to reference using `bwa` and `kallisto`
-- Keep reads that successfully mapped
-- Assemble mitogenome using `MitoZ`
-- If `MitoZ` fails, identify the best reference sequence
-	- Use `MITGARD` to assemble mitogenome
-	- Use `MitoZ` to annotate mitogenome
-- Extract protein coding/barcoding genes
+- Map fastq reads to reference fasta using `kallisto`
+	- Calculate total reads/tpm for each species in database
+- Identify the best reference sequence
+- Assemble the mitogenome using `MITGARD`
+- Annotate mitogenome using `MitoZ`
+	- Extract protein coding/barcoding genes
 - Blast mitogenome or genes to reference database
-- Export results and sequences
-- Align sequences and build phylogeny 
+	- Calculate mean percent identity for each species
+- Align sequences and build phylogeny
+	- Calculate mean/minimum phylogenetic distance for each species
 
 ![](MitoSIS_Flowchart.png)
 
@@ -301,8 +301,8 @@ If `MitoZ` is successful (for original assembly or annotation after `MITGARD`), 
 ```
 MitoSIS.log
 MitoSIS_results/
-├── alignment_summary.tsv
-├── alignment_summary.png
+├── phylogenetic_distance_summary.tsv
+├── phylogenetic_distance_summary.png
 ├── blast_query.fasta
 ├── blast_summary.tsv
 ├── blast_summary.png
@@ -339,7 +339,7 @@ MitoSIS_results/
     └── gene.fasta.trim
 ```
 
-If `MitoZ` fails, then you should expect the following output files. Noteably, a reference mitogenome will be chosen and export. Additionally, instead of a phylogeny for each gene you will find a single phylogeny using the full mitochondrial genome. 
+If `MitoZ` annotation fails, then you should expect the following output files. Noteably, a reference mitogenome will be chosen and export. Additionally, instead of a phylogeny for each gene you will find a single phylogeny using the full mitochondrial genome. 
 ```
 MitoSIS.log
 MitoSIS_results/
