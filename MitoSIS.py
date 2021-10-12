@@ -7,6 +7,7 @@ from argparse import RawTextHelpFormatter
 import csv
 import subprocess as sp
 import gzip
+from difflib import SequenceMatcher
 try:
 	from Bio import SeqIO
 	from Bio.SeqIO import FastaIO
@@ -76,7 +77,7 @@ o-----O         ___  ____ _        _____ _____ _____        o-----O
    O            | |\/| | | __/ _ \ `--. \ | |  `--. \          O
   O-o           | |  | | | || (_) /\__/ /_| |_/\__/ /         O-O
  O---o          \_|  |_/_|\__\___/\____/ \___/\____/         O---o
-O-----o                        v1.1                         O-----o
+O-----o                        v1.2                         O-----o
 o-----O                                                     o-----O
  o---O o O       o O       o O       o O       o O       o O o---O
   o-Oo | | O   o | | O   o | | O   o | | O   o | | O   o | | Oo-O
@@ -142,7 +143,7 @@ parser.add_argument("--convert",
 					action="store_true",
 					default=False,
 					help="Only perform Genbank conversion")
-parser.add_argument("--version", action='version', version='MitoSIS v1.1')
+parser.add_argument("--version", action='version', version='MitoSIS v1.2')
 args=parser.parse_args()
 
 if args.convert==True:
@@ -187,7 +188,7 @@ if args.convert==False:
 	   O            | |\/| | | __/ _ \ `--. \ | |  `--. \          O
 	  O-o           | |  | | | || (_) /\__/ /_| |_/\__/ /         O-O
 	 O---o          \_|  |_/_|\__\___/\____/ \___/\____/         O---o
-	O-----o                        v1.1                         O-----o
+	O-----o                        v1.2                         O-----o
 	o-----O                                                     o-----O
 	 o---O o O       o O       o O       o O       o O       o O o---O
 	  o-Oo | | O   o | | O   o | | O   o | | O   o | | O   o | | Oo-O
@@ -226,15 +227,17 @@ else:
 	for gb_record in SeqIO.parse(gb,'genbank'):
 		acc = gb_record.id
 		org = gb_record.annotations['organism']
-		acc_org = [acc,org]
+		tax = gb_record.annotations['taxonomy'][:-1]
+		tax = ':'.join(tax)
+		acc_org = [acc, org, tax]
 		species.append(acc_org)
-		for feature in gb_record.features:
-			if 'db_xref' in feature.qualifiers:
-				taxid=', '.join(feature.qualifiers['db_xref'])
-				if 'taxon' in taxid:
-					taxid=re.sub(".*taxon\:","", taxid)
-					acc_taxid=[acc,taxid]
-					species2.append(acc_taxid)
+		#for feature in gb_record.features:
+		#	if 'db_xref' in feature.qualifiers:
+		#		taxid=', '.join(feature.qualifiers['db_xref'])
+		#		if 'taxon' in taxid:
+		#			taxid=re.sub(".*taxon\:","", taxid)
+		#			acc_taxid=[acc,taxid]
+		#			species2.append(acc_taxid)
 		with open(reference_name, "a") as output_handle:
 			tmp=SeqIO.write(gb_record, output_handle, "fasta")
 			count = 1 + count
@@ -242,9 +245,9 @@ else:
 	species_df = pd.DataFrame(species)
 	species_df.to_csv(reference_name+'.sp', index=False, header=False, sep="\t")
 	
-	species_df2 = pd.DataFrame(species2)
-	species_df2 = species_df2.drop_duplicates()
-	species_df2.to_csv(reference_name+'.sp2', index=False, header=False, sep="\t")
+	#species_df2 = pd.DataFrame(species2)
+	#species_df2 = species_df2.drop_duplicates()
+	#species_df2.to_csv(reference_name+'.sp2', index=False, header=False, sep="\t")
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Converted %i Genbank records to Fasta :::\n" % count)
 
@@ -253,7 +256,7 @@ if args.convert:
 	quit()
 
 references = list(SeqIO.parse(reference_name,"fasta"))
-species = pd.read_csv(reference_name+'.sp',sep="\t", names=['sseqid','species']) 
+species = pd.read_csv(reference_name+'.sp',sep="\t", names=['sseqid','species','taxonomy']) 
 
 ############################################### PAIRED-END MODE ###############################################
 
@@ -273,18 +276,24 @@ if args.single == None and args.fastq1 != None and args.fastq2 != None:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
 	kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
 	kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
-	kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum(), tpm = X.tpm.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100, tpm_percent=(X.tpm/X.tpm.sum())*100)
-	kallisto_sum=kallisto_sum.sort_values("tpm_percent", ascending=False)
-	kallisto_sum=kallisto_sum.round(3)
-	kallisto_sum2=kallisto_sum >> mask(X.tpm_percent > 1)
-	print(kallisto_sum2.to_string(index=False))
-	kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_results=kallisto >> group_by(X.species) >> summarize(read_count_sum = X.read_count.sum(), read_count_mean = X.read_count.mean(), tpm_sum = X.tpm.sum(), tpm_mean = X.tpm.mean()) >> mask(X.read_count_sum > 0) >> ungroup() >> mutate(read_sum_percent=(X.read_count_sum/X.read_count_sum.sum())*100,read_mean_percent=(X.read_count_mean/X.read_count_mean.sum())*100, tpm_sum_percent=(X.tpm_sum/X.tpm_sum.sum())*100, tpm_mean_percent=(X.tpm_mean/X.tpm_mean.sum())*100)
+	kallisto_results=kallisto_results.sort_values("tpm_mean_percent", ascending=False)
+	kallisto_results=kallisto_results.round(3)
+	kallisto_results2=kallisto_results >> mask(X.tpm_mean_percent > 1)
+	print(kallisto_results2.to_string(index=False))
+	kallisto_results.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_results.to_csv("kallisto/abundance_species.tsv",sep='\t',index=False)
 	
 	############################################### IDENTIFY BEST REFERENCE SEQUENCE BY NUMBER OF MAPPED READS
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Identifying best reference sequence :::\n")
+	closest_taxonomy=kallisto.sort_values("tpm", ascending=False)['taxonomy'].iloc[0]
+	def similar(a):
+		return SequenceMatcher(None, a, closest_taxonomy).ratio()
 	
-	alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
+	kallisto2 = kallisto >> mutate(taxonomic_similarity=X.taxonomy.apply(similar))
+	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0)
+	#alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
 	
 	best_ref=alt_ref['sseqid'].iloc[0]
 	alt_ref=alt_ref.round(3)
@@ -352,18 +361,24 @@ if args.single != None and args.fastq1 == None and args.fastq2 == None:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
 	kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
 	kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
-	kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum(), tpm = X.tpm.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100, tpm_percent=(X.tpm/X.tpm.sum())*100)
-	kallisto_sum=kallisto_sum.sort_values("tpm_percent", ascending=False)
-	kallisto_sum=kallisto_sum.round(3)
-	kallisto_sum2=kallisto_sum >> mask(X.tpm_percent > 1)
-	print(kallisto_sum2.to_string(index=False))
-	kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_results=kallisto >> group_by(X.species) >> summarize(read_count_sum = X.read_count.sum(), read_count_mean = X.read_count.mean(), tpm_sum = X.tpm.sum(), tpm_mean = X.tpm.mean()) >> mask(X.read_count_sum > 0) >> ungroup() >> mutate(read_sum_percent=(X.read_count_sum/X.read_count_sum.sum())*100,read_mean_percent=(X.read_count_mean/X.read_count_mean.sum())*100, tpm_sum_percent=(X.tpm_sum/X.tpm_sum.sum())*100, tpm_mean_percent=(X.tpm_mean/X.tpm_mean.sum())*100)
+	kallisto_results=kallisto_results.sort_values("tpm_mean_percent", ascending=False)
+	kallisto_results=kallisto_results.round(3)
+	kallisto_results2=kallisto_results >> mask(X.tpm_mean_percent > 1)
+	print(kallisto_results2.to_string(index=False))
+	kallisto_results.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_results.to_csv("kallisto/abundance_species.tsv",sep='\t',index=False)
 	
 	############################################### IDENTIFY BEST REFERENCE SEQUENCE BY NUMBER OF MAPPED READS
 	
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Identifying best reference sequence :::\n")
+	closest_taxonomy=kallisto.sort_values("tpm", ascending=False)['taxonomy'].iloc[0]
+	def similar(a):
+		return SequenceMatcher(None, a, closest_taxonomy).ratio()
 	
-	alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
+	kallisto2 = kallisto >> mutate(taxonomic_similarity=X.taxonomy.apply(similar))
+	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0)
+	#alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
 	
 	best_ref=alt_ref['sseqid'].iloc[0]
 	alt_ref=alt_ref.round(3)
@@ -451,7 +466,7 @@ results2.to_csv("blast_summary.tsv",sep='\t',index=False)
 
 sp.call("sort -t$'\t' -k4nr blast_results.tsv > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 sp.call("mv tmp.tab blast_results.tsv", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-sp.call('rm -rf kallisto tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+sp.call('rm -rf tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL) # kallisto
 
 os.mkdir("Phylogenetics")
 os.chdir("Phylogenetics")
@@ -634,7 +649,7 @@ def bar_plot(tsv, yvalue, out, ymax):
 	ax.set_ylim(0,ymax)
 	mpl.pyplot.savefig(out, bbox_inches="tight", format="png")
 
-bar_plot("../kallisto_contamination.tsv", "read_percent", "../kallisto_contamination.png", 100)
+bar_plot("../kallisto_contamination.tsv", "tpm_sum_percent", "../kallisto_contamination.png", 100)
 bar_plot("../blast_summary.tsv", "Mean_Percent_Identity", "../blast_summary.png", 100)
 bar_plot("../phylogenetic_distance_summary.tsv", "minimum_distance", "../phylogenetic_distance_summary.png", 1)
 

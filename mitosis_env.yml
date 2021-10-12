@@ -31,3 +31,4 @@ dependencies:
   - kallisto
   - numpy
   - matplotlib
+  - dendropy

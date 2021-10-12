@@ -273,12 +273,12 @@ if args.single == None and args.fastq1 != None and args.fastq2 != None:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
 	kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
 	kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
-	kallisto_results=kallisto >> group_by(X.species) >> summarize(read_count_sum = X.read_count.sum(), read_count_mean = X.read_count.mean(), tpm_sum = X.tpm.sum(), tpm_mean = X.tpm.mean()) >> mask(X.read_count_sum > 0) >> ungroup() >> mutate(read_sum_percent=(X.read_count_sum/X.read_count_sum.sum())*100,read_mean_percent=(X.read_count_mean/X.read_count_mean.sum())*100, tpm_sum_percent=(X.tpm_sum/X.tpm_sum.sum())*100, tpm_mean_percent=(X.tpm_mean/X.tpm_mean.sum())*100)
-	kallisto_results=kallisto_results.sort_values("tpm_mean_percent", ascending=False)
-	kallisto_results=kallisto_results.round(3)
-	kallisto_results2=kallisto_results >> mask(X.tpm_mean_percent > 1)
-	print(kallisto_results2.to_string(index=False))
-	kallisto_results.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum(), tpm = X.tpm.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100, tpm_percent=(X.tpm/X.tpm.sum())*100)
+	kallisto_sum=kallisto_sum.sort_values("tpm_percent", ascending=False)
+	kallisto_sum=kallisto_sum.round(3)
+	kallisto_sum2=kallisto_sum >> mask(X.tpm_percent > 1)
+	print(kallisto_sum2.to_string(index=False))
+	kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
 	
 	############################################### IDENTIFY BEST REFERENCE SEQUENCE BY NUMBER OF MAPPED READS
 	
@@ -352,12 +352,12 @@ if args.single != None and args.fastq1 == None and args.fastq2 == None:
 	print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing kallisto to assess potential contamination :::\n")
 	kallisto = pd.read_csv("kallisto/abundance.tsv", sep="\t", names=['sseqid','length','eff_length','read_count','tpm'], skiprows=1)
 	kallisto = pd.merge(kallisto, species, on ='sseqid', how ='left')
-	kallisto_results=kallisto >> group_by(X.species) >> summarize(read_count_sum = X.read_count.sum(), read_count_mean = X.read_count.mean(), tpm_sum = X.tpm.sum(), tpm_mean = X.tpm.mean()) >> mask(X.read_count_sum > 0) >> ungroup() >> mutate(read_sum_percent=(X.read_count_sum/X.read_count_sum.sum())*100,read_mean_percent=(X.read_count_mean/X.read_count_mean.sum())*100, tpm_sum_percent=(X.tpm_sum/X.tpm_sum.sum())*100, tpm_mean_percent=(X.tpm_mean/X.tpm_mean.sum())*100)
-	kallisto_results=kallisto_results.sort_values("tpm_mean_percent", ascending=False)
-	kallisto_results=kallisto_results.round(3)
-	kallisto_results2=kallisto_results >> mask(X.tpm_mean_percent > 1)
-	print(kallisto_results2.to_string(index=False))
-	kallisto_results.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
+	kallisto_sum=kallisto >> group_by(X.species) >> summarize(read_count = X.read_count.sum(), tpm = X.tpm.sum()) >> mask(X.read_count > 0) >> ungroup() >> mutate(read_percent=(X.read_count/X.read_count.sum())*100, tpm_percent=(X.tpm/X.tpm.sum())*100)
+	kallisto_sum=kallisto_sum.sort_values("tpm_percent", ascending=False)
+	kallisto_sum=kallisto_sum.round(3)
+	kallisto_sum2=kallisto_sum >> mask(X.tpm_percent > 1)
+	print(kallisto_sum2.to_string(index=False))
+	kallisto_sum.to_csv("kallisto_contamination.tsv",sep='\t',index=False)
 	
 	############################################### IDENTIFY BEST REFERENCE SEQUENCE BY NUMBER OF MAPPED READS
 	
@@ -451,7 +451,7 @@ results2.to_csv("blast_summary.tsv",sep='\t',index=False)
 
 sp.call("sort -t$'\t' -k4nr blast_results.tsv > tmp.tab", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 sp.call("mv tmp.tab blast_results.tsv", shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-sp.call('rm -rf tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL) # kallisto
+sp.call('rm -rf kallisto tmp* *.tmp mapped bowtie_index align.sam consensus.mfa.fasta', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 os.mkdir("Phylogenetics")
 os.chdir("Phylogenetics")
