@@ -292,7 +292,7 @@ if args.single == None and args.fastq1 != None and args.fastq2 != None:
 		return SequenceMatcher(None, a, closest_taxonomy).ratio()
 	
 	kallisto2 = kallisto >> mutate(taxonomic_similarity=X.taxonomy.apply(similar))
-	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0)
+	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.taxonomy, X.taxonomic_similarity, X.eff_length)
 	#alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
 	
 	best_ref=alt_ref['sseqid'].iloc[0]
@@ -377,7 +377,7 @@ if args.single != None and args.fastq1 == None and args.fastq2 == None:
 		return SequenceMatcher(None, a, closest_taxonomy).ratio()
 	
 	kallisto2 = kallisto >> mutate(taxonomic_similarity=X.taxonomy.apply(similar))
-	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0)
+	alt_ref=kallisto2.sort_values(["taxonomic_similarity","tpm"], ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.taxonomy, X.taxonomic_similarity, X.eff_length)
 	#alt_ref=kallisto.sort_values("read_count", ascending=False) >> mask(X.length > 10000, X.read_count > 0) >> drop(X.eff_length, X.tpm)
 	
 	best_ref=alt_ref['sseqid'].iloc[0]
@@ -574,7 +574,7 @@ sp.call('rm *.trim.*', shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
 ############################################### EXPORTING MEAN ALIGNMENT DISTANCES
 
-print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing Mean Phylogenetic Distance across genes :::\n")
+print("\n"+dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ::: Summarizing Phylogenetic Distance across genes :::\n")
 dist_summary2 = dist_summary >> group_by(X.species) >> summarize(minimum_distance=X.minimum_distance.min(), mean_distance=X.mean_distance.mean())
 dist_summary2=dist_summary2.sort_values("minimum_distance")
 dist_summary3=dist_summary2.head(7)

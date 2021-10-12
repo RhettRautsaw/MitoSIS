@@ -43,6 +43,7 @@ MitoSIS compiles all results obtained in an user-friendly HTML file `MitoSIS_sum
 Morover, the printed messages were designed to show a summary of all results obtained with MitoSIS. Here's the output for the paired-end tutorial...
 
 ```
+MitoSIS.py -f1 CON45_R1.fq.gz -f2 CON45_R2.fq.gz -r ReferenceDB.gb -o CON45 -c 16 -M 62G
 
 	       o O       o O       o O       o O       o O       o O
 	     o | | O   o | | O   o | | O   o | | O   o | | O   o | | O
@@ -56,7 +57,7 @@ Morover, the printed messages were designed to show a summary of all results obt
 	   O            | |\/| | | __/ _ \ `--. \ | |  `--. \          O
 	  O-o           | |  | | | || (_) /\__/ /_| |_/\__/ /         O-O
 	 O---o          \_|  |_/_|\__\___/\____/ \___/\____/         O---o
-	O-----o                                                     O-----o
+	O-----o                        v1.2                         O-----o
 	o-----O                                                     o-----O
 	 o---O o O       o O       o O       o O       o O       o O o---O
 	  o-Oo | | O   o | | O   o | | O   o | | O   o | | O   o | | Oo-O
@@ -65,60 +66,60 @@ Morover, the printed messages were designed to show a summary of all results obt
 	       O o       O o       O o       O o       O o       O o
 	
 
-2020-12-23 12:09:01 ::: starting MitoSIS...
-	Forward Reads -> /scratch1/rrautsa/00_PedroMitoSISTest/MitoSIS/Tutorial/CON45_R1.fq.gz
-	Reverse Reads -> /scratch1/rrautsa/00_PedroMitoSISTest/MitoSIS/Tutorial/CON45_R2.fq.gz
-	Reference Database -> /scratch1/rrautsa/00_PedroMitoSISTest/MitoSIS/Tutorial/ReferenceDB.gb
-	Output -> /scratch1/rrautsa/00_PedroMitoSISTest/MitoSIS/Tutorial/MitoSIS_results/CON45*
+2021-10-12 10:39:21 ::: starting MitoSIS...
+	Forward Reads -> /zfs/venom/Rhett/bin/MitoSIS/Tutorial/CON45_R1.fq.gz
+	Reverse Reads -> /zfs/venom/Rhett/bin/MitoSIS/Tutorial/CON45_R2.fq.gz
+	Reference Database -> /zfs/venom/Rhett/bin/MitoSIS/Tutorial/ReferenceDB.gb
+	Output -> /zfs/venom/Rhett/bin/MitoSIS/Tutorial/MitoSIS_results/CON45*
 	Number of CPU -> 16
 	Amount of memory -> 62G
 	MitoZ Clade -> Chordata
 
-
-2020-12-23 12:09:01 ::: Genbank to Fasta conversion previously completed :::
-
-
-2020-12-23 12:09:01 ::: kallisto index previously completed :::
+2021-10-12 10:39:21 ::: Converting Genbank to Fasta :::
 
 
-2020-12-23 12:09:01 ::: Running kallisto :::
+2021-10-12 10:39:21 ::: Converted 521 Genbank records to Fasta :::
 
 
-2020-12-23 12:09:01 ::: Summarizing kallisto to assess potential contamination :::
-
-                species  read_count         tpm  read_percent  tpm_percent
-    Crotalus adamanteus      3389.0  850947.699        85.044       85.095
- Agkistrodon piscivorus       398.0   99625.600         9.987        9.963
-      Crotalus horridus       198.0   49427.400         4.969        4.943
-
-2020-12-23 12:09:01 ::: bwa index previously completed :::
+2021-10-12 10:39:21 ::: Running kallisto index :::
 
 
-2020-12-23 12:09:01 ::: Running bwa mem :::
+2021-10-12 10:39:21 ::: Running kallisto :::
 
 
-2020-12-23 12:09:01 ::: Sorting/converting sam files :::
+2021-10-12 10:39:21 ::: Summarizing kallisto to assess potential contamination :::
+
+                species  read_count_sum  read_count_mean     tpm_sum  tpm_mean  read_sum_percent  read_mean_percent  tpm_sum_percent  tpm_mean_percent
+    Crotalus adamanteus          3389.0           12.191  850947.699  3060.963            85.044             67.018           85.095            67.126
+      Crotalus horridus           198.0            3.882   49427.400   969.165             4.969             21.343            4.943            21.253
+ Agkistrodon piscivorus           398.0            2.117   99625.600   529.923             9.987             11.638            9.963            11.621
+
+2021-10-12 10:39:21 ::: Identifying best reference sequence :::
+
+                           sseqid  length  read_count       tpm                 species
+ Selected Reference > NC_041524.1  17242      1693.75  423259.0     Crotalus adamanteus
+                       MH626511.1  17242      1693.75  423259.0     Crotalus adamanteus
+                       DQ523161.1  17213       199.00   49812.8  Agkistrodon piscivorus
+                      NC_009768.1  17213       199.00   49812.8  Agkistrodon piscivorus
+                      NC_014400.1  17260        99.00   24713.7       Crotalus horridus
+                       HM641837.1  17260        99.00   24713.7       Crotalus horridus
+
+2021-10-12 10:39:22 ::: Running MITGARD :::
 
 
-2020-12-23 12:09:04 ::: Converting bam to fastq :::
+2021-10-12 10:52:17 ::: Annotating MITGARD mitogenome with MitoZ :::
 
 
-2020-12-23 12:09:14 ::: Running MitoZ assembly :::
+2021-10-12 10:59:57 ::: Moving onto BLAST :::
 
 
-2020-12-23 12:24:10 ::: MitoZ ran successfully :::
+2021-10-12 10:59:57 ::: Running makeblastdb :::
 
 
-2020-12-23 12:24:10 ::: Moving onto BLAST :::
+2021-10-12 10:59:57 ::: Running BLAST :::
 
 
-2020-12-23 12:24:10 ::: makeblastdb previously completed :::
-
-
-2020-12-23 12:24:10 ::: Running BLAST :::
-
-
-2020-12-23 12:24:10 ::: Summarizing Mean Percent Identity across genes :::
+2021-10-12 10:59:58 ::: Summarizing Mean Percent Identity across genes :::
 
                     species  Mean_Percent_Identity
         Crotalus adamanteus              99.838545
@@ -126,68 +127,71 @@ Morover, the printed messages were designed to show a summary of all results obt
           Crotalus horridus              89.570667
      Agkistrodon piscivorus              84.574576
 
-2020-12-23 12:24:10 ::: Extracting BLAST matches for Phylogenetics :::
+2021-10-12 11:00:03 ::: Extracting BLAST matches for Phylogenetics :::
 
 
-2020-12-23 12:24:10 ::: Aligning, Trimming, and Inferring Phylogeny for ND1.fasta :::
+2021-10-12 11:00:03 ::: Aligning, Trimming, and Inferring Phylogeny for ND1.fasta :::
 
-                                   , NC_009768.1_Agkistrodon_piscivorus_mi...
-  _________________________________|
- |                                 | DQ523161.1_Agkistrodon_piscivorus_mit...
- |
- |                            , NC_041524.1_Crotalus_adamanteus_mitoc...
- |                            |
- |                            | CON45_CON45_ND1_len_981__2536_3516____
-_|                            |
- |                            | GBEX01002025.1_TSA__Crotalus_adamante...
- |                            |
- |            ________________| MH626511.1_Crotalus_adamanteus_mitoch...
- |           |                |
- |           |                | JU175111.1_TSA__Crotalus_adamanteus_C...
- |___________|
-             |                     , NC_014400.1_Crotalus_horridus_mitocho...
-             |                _____|
-             |               |     | HM641837.1_Crotalus_horridus_mitochon...
-             |_______________|
-                             , GBKC01002148.1_TSA__Crotalus_horridus...
-                             |
-                             | GAAZ01001454.1_TSA__Crotalus_horridus...
+                species  minimum_distance  mean_distance
+    Crotalus adamanteus          0.000000       0.000003
+      Crotalus horridus          0.386271       0.424664
+ Agkistrodon piscivorus          0.738328       0.738328
+                                                   / NC_009768.1 Agkistrodon piscivorus
+/--------------------------------------------------+                                   
+|                                                  \ DQ523161.1 Agkistrodon piscivorus 
+|                                                                                      
+|                 /GAAZ01001454.1 Crotalus horridus                                    
++                 +                                                                    
+|                 |GBKC01002148.1 Crotalus horridus                                    
+|       /---------+                                                                    
+|       |         |                                / HM641837.1 Crotalus horridus      
+|       |         \--------------------------------+                                   
+\-------+                                          \ NC_014400.1 Crotalus horridus     
+        |                                                                              
+        |                /JU175111.1 Crotalus adamanteus                               
+        \----------------+                                                             
+                         |MH626511.1 Crotalus adamanteus                               
+                         +                                                             
+                         |GBEX01002025.1 Crotalus adamanteus                           
+                         +                                                             
+                         |CON45                                                        
+                         +                                                             
+                         \NC_041524.1 Crotalus adamanteus                              
 
-< ... removed output from other genes ... >
+... MORE GENES ...
 
-2020-12-23 12:25:25 ::: Summarizing Mean Alignment Distance across genes :::
+2021-10-12 11:01:10 ::: Summarizing Phylogenetic Distance across genes :::
 
-                    species  Mean_Alignment_Distance
-        Crotalus adamanteus                 0.023411
-          Crotalus horridus                 0.162659
-     Agkistrodon piscivorus                 0.200809
- Crotalus horridus horridus                 0.399161
+                    species  minimum_distance  mean_distance
+        Crotalus adamanteus          0.000000       0.071839
+          Crotalus horridus          0.199598       0.479474
+ Crotalus horridus horridus          0.241776       0.314130
+     Agkistrodon piscivorus          0.461318       0.708560
 
-2020-12-23 12:25:25 ::: Concatenating Genes and Removing Individuals with > 50% Missing :::
-
-
-2020-12-23 12:25:27 ::: Running Concatenated Phylogeny :::
-
-                                      _____ EF669477.1_Agkistrodon_piscivorus
-  ___________________________________|
- |                                   |   , DQ523161.1_Agkistrodon_piscivorus
- |                                   |___|
- |                                       | NC_009768.1_Agkistrodon_piscivorus
-_|
- |                                     , NC_041524.1_Crotalus_adamanteus
- |                                     |
- |               ______________________| CON45_
- |              |                      |
- |______________|                      | MH626511.1_Crotalus_adamanteus
-                |
-                |                         , NC_014400.1_Crotalus_horridus
-                |_________________________|
-                                          | HM641837.1_Crotalus_horridus
+2021-10-12 11:01:10 ::: Concatenating Genes and Removing Individuals with > 50% Missing :::
 
 
-2020-12-23 12:25:29 ::: Generating plots and HTML output :::
+2021-10-12 11:01:12 ::: Running Concatenated Phylogeny :::
+
+                                      /NC_009768.1_Agkistrodon_piscivorus      
+                   /------------------+                                        
+/------------------+                  \DQ523161.1_Agkistrodon_piscivorus       
+|                  |                                                           
+|                  \------------------------ EF669477.1_Agkistrodon_piscivorus 
++                                                                              
+|                                          /HM641837.1_Crotalus_horridus       
+|        /---------------------------------+                                   
+|        |                                 \NC_014400.1_Crotalus_horridus      
+\--------+                                                                     
+         |                   /MH626511.1_Crotalus_adamanteus                   
+         \-------------------+                                                 
+                             |CON45_                                           
+                             +                                                 
+                             \NC_041524.1_Crotalus_adamanteus                  
+
+2021-10-12 11:01:14 ::: Generating plots and HTML output :::
 
 
-2020-12-23 12:25:36 ::: FINISHED :::
+2021-10-12 11:01:20 ::: FINISHED :::
 
 ```
